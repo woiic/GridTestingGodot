@@ -4,35 +4,47 @@ extends Node2D
 @onready var BoardBGSprite = $BoardDGSprite
 @onready var TBoard: Node2D = $"."
 
+enum BoardType {Axial=0, Radial}
+
 class Board:
 	var Size=[0,0]
 	var BasicTile = preload("res://Tile.tscn")
 	var BoardRef
 	var TileSize = 1
 	
-	func DisplayBoard():
+	var tablero = {}
+	
+	func DisplayAxialBoard():
 		for i in Size[0]:
 			for j in Size[1]:
-				print(i)
-				print(j)
-				var BDTileL = BasicTile.instantiate()
-				var BDTileH = BasicTile.instantiate()
-				# coordinadas cubicas ->(i +j, -j)
-				var CoordL = Utils.Coordinates.new(i +j, -j, Utils.TO.Low)
-				var CoordH = Utils.Coordinates.new(i +j, -j, Utils.TO.High)
-				#BDTile
-				BDTileL.Coord = CoordL
-				BDTileH.Coord = CoordH
-				BDTileL.position = CoordL.ToVector2(TileSize)
-				print(CoordL.ToVector2(TileSize))
-				BDTileH.position = CoordH.ToVector2(TileSize)
-				print(CoordH.ToVector2(TileSize))
-				BDTileH.rotation = PI
-				BoardRef.add_child(BDTileL)
-				BoardRef.add_child(BDTileH)
+				SpawnTile(Utils.Coordinates.new(i +j, -j, Utils.TO.Low))
+				SpawnTile(Utils.Coordinates.new(i +j, -j, Utils.TO.High))
 		return
 	
+	func SpawnTile(InCoords:Utils.Coordinates):
+		var BDTile = BasicTile.instantiate()
+		# coordinadas cubicas ->(i +j, -j)
+		var Coord = InCoords
+		#BDTile
+		BDTile.Coord = Coord
+		BDTile.position = Coord.ToVector2(TileSize)
+		if Coord.r:
+			BDTile.rotation = PI
+		# añadir tiles al tablero
+		BoardRef.add_child(BDTile)
+		tablero[str(Coord)] = BDTile
+		return
 	
+	func DisplayRadialBoard():
+		
+		return
+		
+	func getTilesByPos(CoordsArr:Array=[]):
+		var retArr = []
+		for i in CoordsArr:
+			if str(i) in tablero.keys():
+				retArr.append(tablero[str(i)])
+		return retArr
 
 ## Jogo things
 
@@ -44,13 +56,12 @@ func _ready() -> void:
 	MyBoard.Size = [5,5]
 	MyBoard.BoardRef = TBoard
 	MyBoard.TileSize = 202
-	MyBoard.DisplayBoard()
-	
-	
+	MyBoard.DisplayAxialBoard()
 	return
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
-	#print(MyBoard.x)
+	var a = delta
+	a = a+1
 	pass

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cwmbfsv6e0hjt"]
+
+[ext_resource type="Script" uid="uid://dv8o7s72uysfl" path="res://TableroFlexible.gd" id="1_peb51"]
+
+[node name="Node2D" type="Node2D"]
+script = ExtResource("1_peb51")

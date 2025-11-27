@@ -2,6 +2,15 @@ extends Node2D
 
 enum TO{Low = 0, High = 1}
 
+class Tupla:
+	var a
+	var b
+	
+	func _init(InA=null, InB=null):
+		a = InA
+		b = InB
+	
+
 class Coordinates:
 	var p = 0
 	var q = 0
@@ -22,6 +31,70 @@ class Coordinates:
 		var y = -q*sqrt(3)*(sizeLenght/2)
 		return Vector2(x, y)
 	
-	func DistanceTo(InCoord):
+	func _to_string() -> String:
+		var ret = "(%d, %d, %d)" % [p, q, r]
+		return ret
+	
+
+func Vector2ToCoordinates(inVector:Vector2, SizeLenght):
+	var x = inVector.x
+	var y = inVector.y
+	var p = floor(x/SizeLenght - (y/(sqrt(3)*SizeLenght/2))/(sqrt(3)) )
+	var q = floor(y*2/sqrt(3))
+	var r = 0
 		
-		return InCoord
+	return
+	
+
+class CoordinatesCF:
+	var a = 0
+	
+
+### ---- ---- ###
+
+
+enum Side{Left=0, Right, Up, Down}
+
+class TableroFlexible:
+	var XSize:Vector2 = Vector2(0,0)
+	var YSize:Vector2 = Vector2(0,0)
+	
+	var TRVector:Array = []
+	var TLVector:Array = []
+	var BRVector:Array = []
+	var BLVector:Array = []
+	
+	
+	func _init(LeftLenght:int, RightLenght:int, TopLenght:int, BottomLenght:int) -> void:
+		# Left <= 0
+		if LeftLenght > 0 : LeftLenght = 0
+		if BottomLenght > 0 : BottomLenght = 0
+		if RightLenght < 0 : LeftLenght = 0
+		if TopLenght < 0 : TopLenght = 0
+		self.XSize = Vector2(LeftLenght, RightLenght)
+		self.YSize = Vector2(BottomLenght, TopLenght)
+		
+		# Add Arrays
+		
+		for y in TopLenght:
+			var Rarr = []
+			Rarr.resize(RightLenght)
+			Rarr.fill(0)
+			var Larr = []
+			Larr.resize(LeftLenght)
+			Larr.fill(0)
+			TRVector.append(Rarr)
+			TLVector.append(Larr)
+		for y in BottomLenght:
+			var Rarr = []
+			Rarr.resize(RightLenght)
+			Rarr.fill(0)
+			var Larr = []
+			Larr.resize(LeftLenght)
+			Larr.fill(0)
+			BRVector.append(Rarr)
+			BLVector.append(Larr)
+		
+		
+		pass
+	
