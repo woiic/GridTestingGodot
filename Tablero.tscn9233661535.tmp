@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://byy2dwu4ecbjk"]
+
+[ext_resource type="Script" uid="uid://1m13mxhnj7wr" path="res://Tablero.gd" id="1_ot4jy"]
+
+[node name="TBoard" type="Node2D"]
+script = ExtResource("1_ot4jy")
+
+[node name="BoardDGSprite" type="Sprite2D" parent="."]

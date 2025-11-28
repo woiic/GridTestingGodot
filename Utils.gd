@@ -36,14 +36,31 @@ class Coordinates:
 		return ret
 	
 
-func Vector2ToCoordinates(inVector:Vector2, SizeLenght):
-	var x = inVector.x
-	var y = inVector.y
-	var p = floor(x/SizeLenght - (y/(sqrt(3)*SizeLenght/2))/(sqrt(3)) )
-	var q = floor(y*2/sqrt(3))
-	var r = 0
-		
-	return
+func Vector2ToCoords(vec: Vector2, tile_size: float, invert_y := true) -> Utils.Coordinates:
+	# convert to tile units; flip Y if needed because screen Y goes down
+	var x = vec.x / tile_size
+	var y = -vec.y / tile_size
+
+	# skewed / rhombus coordinates (same transform you used)
+	var p_f = x - y / sqrt(3)
+	var q_f = y * 2.0 / sqrt(3)
+
+	var p0 = floor(p_f)
+	var q0 = floor(q_f)
+
+	var u = p_f - p0    # fractional part 0..1
+	var v = q_f - q0    # fractional part 0..1
+
+	# triangle half: lower if u+v < 1, upper if >= 1
+	var r = (u + v <= 1)
+
+	# debug: see values while testing
+	#print("vec=", vec, " -> p_f=", p_f, " q_f=", q_f, " p0=", p0, " q0=", q0, " u+v=", u+v, " r=", r)
+	print(p0, q0, r)
+
+	return Utils.Coordinates.new(p0, q0, r)
+
+
 	
 
 class CoordinatesCF:
