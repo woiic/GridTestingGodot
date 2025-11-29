@@ -39,7 +39,8 @@ class Coordinates:
 func Vector2ToCoords(vec: Vector2, tile_size: float, invert_y := true) -> Utils.Coordinates:
 	var center = Vector2(1.0/2.0,sqrt(3)/4) 
 	#center = Vector2(0,0)
-	var theta = PI * -30 / 180
+	var theta_base = 30
+	var theta = PI * -theta_base / 180
 	# convert to tile units; flip Y if needed because screen Y goes down
 	var l = vec.x / tile_size  + center.x
 	var t = -vec.y / tile_size  - center.y
@@ -60,7 +61,13 @@ func Vector2ToCoords(vec: Vector2, tile_size: float, invert_y := true) -> Utils.
 	# debug: see values while testing
 	#print("vec=", vec, " -> p_f=", p_f, " q_f=", q_f, " p0=", p0, " q0=", q0, " u+v=", u+v, " r=", r)
 	print("CoordCuadr : x: ", p0, "  y: ", -q0,"  r: ", r)
-	print("CoordCube: p", p0 + q0, "  q: ", -q0,"  r: ", r)
+	print("CoordCube: p: ", p0 + q0, "  q: ", -q0,"  r: ", r)
+	var pf = p0 + q0
+	var qf = -q0
+	var sf = -p0
+	if r:
+		pf += 1
+	print("CoordCubeFace: p: ", pf, "  q: ", qf,"  s: ", sf)
 
 	return Utils.Coordinates.new(p0, -q0, r)
 
