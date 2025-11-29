@@ -18,8 +18,14 @@ class Board:
 	func DisplayAxialBoard():
 		for i in Size[0]:
 			for j in Size[1]:
-				SpawnTile(Utils.Coordinates.new(i +j, -j, Utils.TO.Low))
-				SpawnTile(Utils.Coordinates.new(i +j, -j, Utils.TO.High))
+				var c_low = Utils.Coordinates.new()
+				var c_high = Utils.Coordinates.new()
+				c_low.setByCuadratic(i , -j, Utils.TO.Low)
+				c_high.setByCuadratic(i , -j, Utils.TO.High)
+				SpawnTile(c_low)
+				SpawnTile(c_high)
+				print(c_low)
+				print(c_high)
 		return
 	
 	func SpawnTile(InCoords:Utils.Coordinates):
@@ -36,8 +42,72 @@ class Board:
 		tablero[str(Coord)] = BDTile
 		return
 	
-	func DisplayRadialBoard():
+	func DisplayRadialBoardEdge():
+		var n =  Size[0]
+		var triples = find_triplets_leq(n)
+		for xyz in triples:
+			var x = xyz[0]
+			var y = xyz[1]
+			var z = xyz[2]
+			var c = Utils.Coordinates.new()
+			c.setByCubeFace(x, y, z)
+			c = c.toCube()
+			#print(x,y,z)
+			#print(c.toCubeFace())
+			SpawnTile(c)
+		print(len(triples))
+		return
 		
+	func DisplayRingBoardEdge():
+		var n =  Size[0]
+		var triples = find_triplets(n)
+		for xyz in triples:
+			var x = xyz[0]
+			var y = xyz[1]
+			var z = xyz[2]
+			var c = Utils.Coordinates.new()
+			c.setByCubeFace(x, y, z)
+			c = c.toCube()
+			print(x,y,z)
+			print(c.toCubeFace())
+			print(c)
+			
+			SpawnTile(c)
+		print(len(triples))
+		return
+		
+	func DisplayRadialBoard():
+		var n =  Size[0]
+		var triples = find_triplets_max_leq(n)
+		for xyz in triples:
+			var x = xyz[0]
+			var y = xyz[1]
+			var z = xyz[2]
+			var c = Utils.Coordinates.new()
+			c.setByCubeFace(x, y, z)
+			c = c.toCube()
+			#print(x,y,z)
+			#print(c.toCubeFace())
+			SpawnTile(c)
+		print(len(triples))
+		return
+		
+	func DisplayRingBoard():
+		var n =  Size[0]
+		var triples = find_triplets_max_eq(n)
+		for xyz in triples:
+			var x = xyz[0]
+			var y = xyz[1]
+			var z = xyz[2]
+			var c = Utils.Coordinates.new()
+			c.setByCubeFace(x, y, z)
+			c = c.toCube()
+			print(x,y,z)
+			print(c.toCubeFace())
+			print(c)
+			
+			SpawnTile(c)
+		print(len(triples))
 		return
 		
 	func getTilesByPos(CoordsArr:Array=[]):
@@ -46,10 +116,172 @@ class Board:
 			if str(i) in tablero.keys():
 				retArr.append(tablero[str(i)])
 		return retArr
-	
-	
-	
+		
+		
+		
+	# Radial Stuff
+	func weak_compositions(total: int, parts: int) -> Array:
+		var out := []
+		if parts == 0:
+			if total == 0:
+				out.append([])
+			return out
 
+		if parts == 1:
+			out.append([total])
+			return out
+
+		if parts == 2:
+			for a in total + 1:
+				out.append([a, total - a])
+			return out
+
+		if parts == 3:
+			for a in total + 1:
+				for b in (total - a) + 1:
+					out.append([a, b, total - a - b])
+			return out
+
+		return out
+
+
+	func find_triplets(n: int) -> Array:
+		var k : int = n % 2
+		# Feasibility
+		if abs(k) > n or ((n + k) % 2) != 0:
+			return []
+		
+		var p := (n + k) / 2
+		var q := (n - k) / 2
+		
+		var results := {}
+		var indices = [0, 1, 2]
+		
+		# Iterate subsets of positive indices
+		for r in range(4):
+			var combs := Utils._combinations(indices, r)
+			for pos_indices in combs:
+				var neg_indices := []
+				for i in indices:
+					if not pos_indices.has(i):
+						neg_indices.append(i)
+
+				var pos_vals_list = weak_compositions(p, pos_indices.size())
+				var neg_vals_list = weak_compositions(q, neg_indices.size())
+
+				for pos_vals in pos_vals_list:
+					for neg_vals in neg_vals_list:
+						var xyz = [0, 0, 0]
+
+						for i in pos_indices.size():
+							xyz[pos_indices[i]] = pos_vals[i]
+
+						for i in neg_indices.size():
+							xyz[neg_indices[i]] = -neg_vals[i]
+
+						# Store as a key for dedupe
+						results[str(xyz)] = xyz
+
+		return results.values()
+
+	func find_triplets_leq(n: int) -> Array:
+		var out := []
+		for e in range(n + 1):
+			var arr := find_triplets(e)
+			for xyz in arr:
+				out.append(xyz)
+		return out
+	
+	
+	func find_triplets_max_eq_S(n: int, S: int) -> Array:
+		var results := {}
+		var indices = [0, 1, 2]
+
+		# All non-empty subsets of indices
+		var all_subsets := []
+		for r in range(1, 4):
+			all_subsets += Utils._combinations(indices, r)
+
+		# Iterate each subset I = indices where |coord| == n
+		for I in all_subsets:
+			var J := []
+			for i in indices:
+				if not I.has(i):
+					J.append(i)
+
+			# Sign assignments for coordinates in I
+			var sign_choices := []
+			Utils._sign_assignments(I.size(), [], sign_choices)
+
+			for signs in sign_choices:
+				# Compute C = sum(sign[i] * n)
+				var C := 0
+				for t in I.size():
+					C += signs[t] * n
+
+				# Case 1: |J| = 0
+				if J.size() == 0:
+					if C == S:
+						var xyz = [0,0,0]
+						for t in I.size():
+							xyz[I[t]] = signs[t] * n
+						results[str(xyz)] = xyz
+					continue
+
+				# Case 2: |J| = 1
+				if J.size() == 1:
+					var t_val = S - C
+					if abs(t_val) <= n - 1:
+						var xyz = [0,0,0]
+						for k in I.size():
+							xyz[I[k]] = signs[k] * n
+						xyz[J[0]] = t_val
+						results[str(xyz)] = xyz
+					continue
+
+				# Case 3: |J| = 2
+				var lo = -(n - 1)
+				var hi = (n - 1)
+				for a in range(lo, hi + 1):
+					var b = S - C - a
+					if abs(b) <= n - 1:
+						var xyz = [0,0,0]
+						for k in I.size():
+							xyz[I[k]] = signs[k] * n
+						xyz[J[0]] = a
+						xyz[J[1]] = b
+						results[str(xyz)] = xyz
+
+		return results.values()
+		
+	func find_triplets_max_eq(n: int) -> Array:
+		var results := {}
+
+		# S = 0
+		var r0 = find_triplets_max_eq_S(n, 0)
+		for xyz in r0:
+			results[str(xyz)] = xyz
+
+		# S = 1
+		var r1 = find_triplets_max_eq_S(n, 1)
+		for xyz in r1:
+			results[str(xyz)] = xyz
+
+		return results.values()
+		
+	func find_triplets_max_leq(n: int) -> Array:
+		var results := {}
+
+		for r in range(n + 1):
+			var r0 = find_triplets_max_eq_S(r, 0)
+			for xyz in r0:
+				results[str(xyz)] = xyz
+
+			var r1 = find_triplets_max_eq_S(r, 1)
+			for xyz in r1:
+				results[str(xyz)] = xyz
+
+		return results.values()
 ## Jogo things
 
 var MyBoard
@@ -57,10 +289,14 @@ var MyBoard
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	MyBoard = Board.new()
-	MyBoard.Size = [5,5]
+	MyBoard.Size = [6,6]
 	MyBoard.BoardRef = TBoard
 	MyBoard.TileSize = 202
-	MyBoard.DisplayAxialBoard()
+	#MyBoard.DisplayAxialBoard()
+	#MyBoard.DisplayRingBoardEdge()
+	#MyBoard.DisplayRadialBoardEdge()
+	#MyBoard.DisplayRingBoard()
+	MyBoard.DisplayRadialBoard()
 	return
 
 
@@ -71,7 +307,7 @@ func _process(delta: float) -> void:
 	var mouse = get_viewport().get_mouse_position()
 	MyBoard.last_coords = Utils.Vector2ToCoords(mouse, MyBoard.TileSize)
 	queue_redraw() # redraw
-	print("Mouse: ", mouse.x, ", ", mouse.y)
+	#print("Mouse: ", mouse.x, ", ", mouse.y)
 	#print("Screen:", get_viewport().get_mouse_position())
 	#print("World:", get_global_mouse_position())
 	pass
@@ -79,37 +315,29 @@ func _process(delta: float) -> void:
 func _draw():
 	if MyBoard.last_coords == null:
 		return
-
-	var pts = coords_to_triangle_points(MyBoard.last_coords.p, MyBoard.last_coords.q, MyBoard.last_coords.r, MyBoard.TileSize)
-	var color = Color.BLUE if MyBoard.last_coords.r else Color.RED
-	draw_polygon(pts, [color])
+	#print(MyBoard.last_coords.toCubeFace())
+	draw_triangle_pos()
 	
-func coords_to_triangle_points(p:int, q:int, r:bool, tile_size:float) -> PackedVector2Array:
+func coords_to_triangle_points(InCoords:Utils.Coordinates, tile_size:float) -> PackedVector2Array:
 	var theta_base = 30
 	var theta = PI * theta_base / 180
-	q = -q
-	# 1) Convertir coord → centro matemático del triángulo
-	var x = p + q * sin(theta) 
-	var y = -q * cos(theta) 
-	
-	#x = p 
-	#y = -q
 	var h = tile_size * cos(theta)
 	# 2) Convertir a pixeles (Y positivo hacia abajo)
-	var cx = x * tile_size
-	var cy = -y * tile_size
-
+	
+	var vec = InCoords.toCube().ToVector2(tile_size)
+	var cx = vec.x
+	var cy = vec.y
 	# 3) Altura del triángulo equilátero
 	
 
 	var pts := PackedVector2Array()
 
 	# 4) Sólo dos orientaciones: arriba o abajo
-	if r:
+	if InCoords.r:
 		# Triángulo hacia arriba
-		pts.append(Vector2(cx - tile_size/2 + tile_size/2, cy + h/2))
-		pts.append(Vector2(cx + tile_size/2 + tile_size/2, cy + h/2))
-		pts.append(Vector2(cx + tile_size/2, cy - h/2))
+		pts.append(Vector2(cx - tile_size/2 , cy + h/2))
+		pts.append(Vector2(cx + tile_size/2 , cy + h/2))
+		pts.append(Vector2(cx , cy - h/2))
 	else:
 		# Triángulo hacia abajo
 		pts.append(Vector2(cx - tile_size/2, cy - h/2))
@@ -117,3 +345,30 @@ func coords_to_triangle_points(p:int, q:int, r:bool, tile_size:float) -> PackedV
 		pts.append(Vector2(cx, cy + h/2))
 
 	return pts
+	
+
+
+
+func draw_triangle_pos():
+	#print(MyBoard.last_coords.toCubeFace())
+	var pts = coords_to_triangle_points(MyBoard.last_coords, MyBoard.TileSize)
+	var color = Color.BLUE if MyBoard.last_coords.r else Color.RED
+	draw_polygon(pts, [color])
+
+func draw_ring_pos():
+	var d = MyBoard.last_coords.edgeDistance()
+	var triplets = MyBoard.find_triplets(d)
+	for xyz in triplets:
+		var c = Utils.Coordinates.new()
+		var x = xyz[0]
+		var y = xyz[1]
+		var z = xyz[2]
+		c.setByCubeFace(x, y, z)
+		var pts = coords_to_triangle_points(c, MyBoard.TileSize)
+		var color = Color.BLUE if c.r else Color.RED
+		draw_polygon(pts, [color])
+		
+			
+		
+	
+	pass

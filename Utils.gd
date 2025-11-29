@@ -22,19 +22,107 @@ class Coordinates:
 		r = InR
 		return
 	
+	func setByCubeFace(x, y, z):
+		p = -z
+		q = y
+		r = x+y+z
+		return
+	func setByCuadratic(x, y, z):
+		p = x - y
+		q = y
+		r = z
+		return
+		
 	func ToVector2(sizeLenght):
-		#var x = - q*(sizeLenght/2)  + r*(sizeLenght/2) 
-		#var x = (sqrt(3)/2*p + sqrt(3)/4 * q) * sizeLenght + r*(sizeLenght/2) 
-		var x = q*(sizeLenght/2) + p*sizeLenght + r*(sizeLenght/2)
+		##var x = - q*(sizeLenght/2)  + r*(sizeLenght/2) 
+		##var x = (sqrt(3)/2*p + sqrt(3)/4 * q) * sizeLenght + r*(sizeLenght/2) 
+		#var x = q*(sizeLenght/2) + p*sizeLenght 
+		#if r:
+			#x += (sizeLenght/2)
+		##var y = -q*sqrt(3)*(sizeLenght/2)
+		##var y = (3.0/4) * p * sizeLenght
 		#var y = -q*sqrt(3)*(sizeLenght/2)
-		#var y = (3.0/4) * p * sizeLenght
-		var y = -q*sqrt(3)*(sizeLenght/2)
-		return Vector2(x, y)
+		#return Vector2(x, y)
+		var theta_base = 30
+		var theta = PI * theta_base / 180
+		var p_aux = p
+		var q_aux = -q
+		# 1) Convertir coord → centro matemático del triángulo
+		var x = p_aux - q_aux * sin(theta) 
+		var y = -q_aux * cos(theta) 
+		
+		#x = p 
+		#y = -q
+		var h = sizeLenght * cos(theta)
+		# 2) Convertir a pixeles (Y positivo hacia abajo)
+		var cx = x * sizeLenght 
+		var cy = -y * sizeLenght
+		if r:
+			cx += (sizeLenght/2)
+		return Vector2(cx,cy)
+		
+	func toCuadratic():
+		var x = p + q
+		var y = q
+		return Coordinates.new(x,y,r)
+	
+	func toCube():
+		var x = p - q
+		var y = q
+		return Coordinates.new(x,y,r)
+	
+	func toCubeFace():
+		var pf = p - q
+		var qf = q
+		var sf = -p
+		if r:
+			pf += 1
+		return Vector3(pf, qf, sf)
+		
+	func edgeDistance():
+		var c_abs = abs(self.toCubeFace())
+		return c_abs.x + c_abs.y + c_abs.z
+	
+	func vertexDistance():
+		return abs(self.toCubeFace()).max()
 	
 	func _to_string() -> String:
 		var ret = "(%d, %d, %d)" % [p, q, r]
 		return ret
 	
+#
+#
+#
+# MATHS 
+func _combinations(arr: Array, r: int) -> Array:
+	var out := []
+	_comb_dfs(arr, r, 0, [], out)
+	return out
+
+func _comb_dfs(arr: Array, r: int, start: int, current: Array, out: Array) -> void:
+	if current.size() == r:
+		out.append(current.duplicate())
+		return
+	for i in range(start, arr.size()):
+		current.append(arr[i])
+		_comb_dfs(arr, r, i+1, current, out)
+		current.pop_back()
+		
+func _sign_assignments(count: int, current: Array, out: Array) -> void:
+	if current.size() == count:
+		out.append(current.duplicate())
+		return
+	# append -1
+	current.append(-1)
+	_sign_assignments(count, current, out)
+	current.pop_back()
+	# append +1
+	current.append(1)
+	_sign_assignments(count, current, out)
+	current.pop_back()
+####################
+#
+
 
 func Vector2ToCoords(vec: Vector2, tile_size: float, invert_y := true) -> Utils.Coordinates:
 	var center = Vector2(1.0/2.0,sqrt(3)/4) 
@@ -60,14 +148,14 @@ func Vector2ToCoords(vec: Vector2, tile_size: float, invert_y := true) -> Utils.
 
 	# debug: see values while testing
 	#print("vec=", vec, " -> p_f=", p_f, " q_f=", q_f, " p0=", p0, " q0=", q0, " u+v=", u+v, " r=", r)
-	print("CoordCuadr : x: ", p0, "  y: ", -q0,"  r: ", r)
-	print("CoordCube: p: ", p0 + q0, "  q: ", -q0,"  r: ", r)
+	#print("CoordCuadr : x: ", p0, "  y: ", -q0,"  r: ", r)
+	#print("CoordCube: p: ", p0 + q0, "  q: ", -q0,"  r: ", r)
 	var pf = p0 + q0
 	var qf = -q0
 	var sf = -p0
 	if r:
 		pf += 1
-	print("CoordCubeFace: p: ", pf, "  q: ", qf,"  s: ", sf)
+	#print("CoordCubeFace: p: ", pf, "  q: ", qf,"  s: ", sf)
 
 	return Utils.Coordinates.new(p0, -q0, r)
 
@@ -125,4 +213,6 @@ class TableroFlexible:
 		
 		
 		pass
+	
+	
 	
