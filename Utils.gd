@@ -41,14 +41,14 @@ func Vector2ToCoords(vec: Vector2, tile_size: float, invert_y := true) -> Utils.
 	var theta = PI * 30 / 180
 	# convert to tile units; flip Y if needed because screen Y goes down
 	var l = vec.x / tile_size + center.x
-	var t = -vec.y / tile_size + center.y
+	var t = -vec.y / tile_size - center.y
 
 	# skewed / rhombus coordinates (same transform you used)
 	var x = l - t * tan(theta)
 	var y = -t * 1/cos(theta)
 
-	var p0 = floor(x)
-	var q0 = floor(y)
+	var p0 : int = floor(x)
+	var q0 : int = floor(y)
 
 	var u = x - p0    # fractional part 0..1
 	var v = y - q0    # fractional part 0..1
@@ -58,7 +58,7 @@ func Vector2ToCoords(vec: Vector2, tile_size: float, invert_y := true) -> Utils.
 
 	# debug: see values while testing
 	#print("vec=", vec, " -> p_f=", p_f, " q_f=", q_f, " p0=", p0, " q0=", q0, " u+v=", u+v, " r=", r)
-	print(p0, q0, r)
+	print("p: ", p0, "  q: ", q0,"  r: ", r)
 
 	return Utils.Coordinates.new(p0, q0, r)
 
