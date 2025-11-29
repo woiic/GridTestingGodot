@@ -79,39 +79,40 @@ func _process(delta: float) -> void:
 func _draw():
 	if MyBoard.last_coords == null:
 		return
-	
-	var tri = get_triangle_points(MyBoard.last_coords.p, MyBoard.last_coords.q, MyBoard.last_coords.r, MyBoard.TileSize)
 
+	var pts = coords_to_triangle_points(MyBoard.last_coords.p, MyBoard.last_coords.q, MyBoard.last_coords.r, MyBoard.TileSize)
 	var color = Color.BLUE if MyBoard.last_coords.r else Color.RED
-	draw_polygon(tri, [color])
+	draw_polygon(pts, [color])
 	
-func get_triangle_points(p:int, q:int, r:bool, tile_size:float) -> PackedVector2Array:
-	var sqrt3 = sqrt(3)
+func coords_to_triangle_points(p:int, q:int, r:bool, tile_size:float) -> PackedVector2Array:
+	
+	var theta = PI * 30 / 180
 
-	# Convert back to math space
-	var x = p + q/2.0
-	var y = q * (sqrt3/2.0)
+	# 1) Convertir coord → centro matemático del triángulo
+	var x = p + q * sin(theta) 
+	var y = -q * cos(theta) 
+	
+	x = p 
+	y = -q
+	# 2) Convertir a pixeles (Y positivo hacia abajo)
+	var cx = x * tile_size
+	var cy = -y * tile_size
 
-	# Convert math → screen (Y-down)
-	x *= tile_size
-	y *= -tile_size
+	# 3) Altura del triángulo equilátero
+	var h = tile_size * cos(theta)
 
-	var center = Vector2(x, y)
+	var pts := PackedVector2Array()
 
-	# triangle height
-	var h = tile_size * sqrt3 / 2.0
-
-	var pts = PackedVector2Array()
-
+	# 4) Sólo dos orientaciones: arriba o abajo
 	if r:
-		# ⬆ triangle (UP)
-		pts.append(center + Vector2(0, 0))
-		pts.append(center + Vector2(tile_size, 0))
-		pts.append(center + Vector2(tile_size/2, -h))
+		# Triángulo hacia arriba
+		pts.append(Vector2(cx - tile_size/2 + tile_size/2, cy + h/2))
+		pts.append(Vector2(cx + tile_size/2 + tile_size/2, cy + h/2))
+		pts.append(Vector2(cx + tile_size/2, cy - h/2))
 	else:
-		# ⬇ triangle (DOWN)
-		pts.append(center + Vector2( 2*tile_size, - 3/2*h))
-		pts.append(center + Vector2(tile_size/2, -h))
-		pts.append(center + Vector2(tile_size, 0))
+		# Triángulo hacia abajo
+		pts.append(Vector2(cx - tile_size/2, cy - h/2))
+		pts.append(Vector2(cx + tile_size/2, cy - h/2))
+		pts.append(Vector2(cx, cy + h/2))
 
 	return pts
