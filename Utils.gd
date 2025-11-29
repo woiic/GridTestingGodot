@@ -59,9 +59,10 @@ func Vector2ToCoords(vec: Vector2, tile_size: float, invert_y := true) -> Utils.
 
 	# debug: see values while testing
 	#print("vec=", vec, " -> p_f=", p_f, " q_f=", q_f, " p0=", p0, " q0=", q0, " u+v=", u+v, " r=", r)
-	print("p: ", p0, "  q: ", q0,"  r: ", r)
+	print("CoordCuadr : x: ", p0, "  y: ", -q0,"  r: ", r)
+	print("CoordCube: p", p0 + q0, "  q: ", -q0,"  r: ", r)
 
-	return Utils.Coordinates.new(p0, q0, r)
+	return Utils.Coordinates.new(p0, -q0, r)
 
 
 	

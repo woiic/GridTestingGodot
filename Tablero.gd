@@ -87,7 +87,7 @@ func _draw():
 func coords_to_triangle_points(p:int, q:int, r:bool, tile_size:float) -> PackedVector2Array:
 	
 	var theta = PI * 30 / 180
-
+	q = -q
 	# 1) Convertir coord → centro matemático del triángulo
 	var x = p + q * sin(theta) 
 	var y = -q * cos(theta) 
