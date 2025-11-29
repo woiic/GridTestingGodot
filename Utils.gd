@@ -37,15 +37,16 @@ class Coordinates:
 	
 
 func Vector2ToCoords(vec: Vector2, tile_size: float, invert_y := true) -> Utils.Coordinates:
-	var center = Vector2(0,0) 
-	var theta = PI * 30 / 180
+	var center = Vector2(1.0/2.0,sqrt(3)/4) 
+	#center = Vector2(0,0)
+	var theta = PI * -30 / 180
 	# convert to tile units; flip Y if needed because screen Y goes down
-	var l = vec.x / tile_size + center.x
-	var t = -vec.y / tile_size - center.y
+	var l = vec.x / tile_size  + center.x
+	var t = -vec.y / tile_size  - center.y
 
 	# skewed / rhombus coordinates (same transform you used)
-	var x = l - t * tan(theta)
-	var y = -t * 1/cos(theta)
+	var x = l - t * tan(theta) 
+	var y = -t * 1/cos(theta) 
 
 	var p0 : int = floor(x)
 	var q0 : int = floor(y)
