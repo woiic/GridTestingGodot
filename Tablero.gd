@@ -316,7 +316,9 @@ func _draw():
 	if MyBoard.last_coords == null:
 		return
 	#print(MyBoard.last_coords.toCubeFace())
-	draw_triangle_pos()
+	#draw_triangle_pos()
+	#draw_ring_edge_pos()
+	draw_ring_pos()
 	
 func coords_to_triangle_points(InCoords:Utils.Coordinates, tile_size:float) -> PackedVector2Array:
 	var theta_base = 30
@@ -355,7 +357,7 @@ func draw_triangle_pos():
 	var color = Color.BLUE if MyBoard.last_coords.r else Color.RED
 	draw_polygon(pts, [color])
 
-func draw_ring_pos():
+func draw_ring_edge_pos():
 	var d = MyBoard.last_coords.edgeDistance()
 	var triplets = MyBoard.find_triplets(d)
 	for xyz in triplets:
@@ -368,7 +370,15 @@ func draw_ring_pos():
 		var color = Color.BLUE if c.r else Color.RED
 		draw_polygon(pts, [color])
 		
-			
-		
-	
-	pass
+func draw_ring_pos():
+	var d = MyBoard.last_coords.vertexDistance()
+	var triplets = MyBoard.find_triplets_max_eq(d)
+	for xyz in triplets:
+		var c = Utils.Coordinates.new()
+		var x = xyz[0]
+		var y = xyz[1]
+		var z = xyz[2]
+		c.setByCubeFace(x, y, z)
+		var pts = coords_to_triangle_points(c, MyBoard.TileSize)
+		var color = Color.BLUE if c.r else Color.RED
+		draw_polygon(pts, [color])

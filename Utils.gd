@@ -84,7 +84,8 @@ class Coordinates:
 		return c_abs.x + c_abs.y + c_abs.z
 	
 	func vertexDistance():
-		return abs(self.toCubeFace()).max()
+		var c_abs = abs(self.toCubeFace())
+		return max( c_abs.x, c_abs.y, c_abs.z)
 	
 	func _to_string() -> String:
 		var ret = "(%d, %d, %d)" % [p, q, r]
