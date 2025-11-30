@@ -79,18 +79,27 @@ class Coordinates:
 			pf += 1
 		return Vector3(pf, qf, sf)
 		
-	func edgeDistance():
-		var c_abs = abs(self.toCubeFace())
+	func edgeDistance(Coord: Utils.Coordinates = Utils.Coordinates.new()):
+		var dif = self.substract(Coord)
+		var c_abs = abs(dif.toCubeFace())
 		return c_abs.x + c_abs.y + c_abs.z
 	
-	func vertexDistance():
-		var c_abs = abs(self.toCubeFace())
+	func vertexDistance(Coord: Utils.Coordinates = Utils.Coordinates.new()):
+		var dif = self.substract(Coord)
+		var c_abs = abs(dif.toCubeFace())
 		return max( c_abs.x, c_abs.y, c_abs.z)
 	
 	func _to_string() -> String:
 		var ret = "(%s, %s, %s)" % [str(p), str(q), str(r)]
 		return ret
 	
+	func substract(Coord: Utils.Coordinates) -> Utils.Coordinates:
+		var vec1 = self.toCubeFace()
+		var vec2 = Coord.toCubeFace()
+		var dif = vec1 - vec2
+		var new_Coord = Utils.Coordinates.new()
+		new_Coord.setByCubeFace(dif.x,dif.y,dif.z)
+		return new_Coord
 #
 #
 #

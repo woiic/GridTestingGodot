@@ -13,6 +13,7 @@ class Board:
 	var TileSize = 1
 	var last_coords = null
 	var last_clicked_coords = null
+	const EPSILON := Vector3(1e-6, 2e-6, -3e-6)
 	
 	var tablero = {}
 	
@@ -283,6 +284,54 @@ class Board:
 				results[str(xyz)] = xyz
 
 		return results.values()
+		
+	func find_line(coord1: Utils.Coordinates, coord2: Utils.Coordinates) -> Array:
+		var a = coord1.toCubeFace() # (x,y,z)
+		var b = coord2.toCubeFace() # (x,y,z)
+		print(a)
+		print(b)
+		# --- EPSILON NUDGE ---
+		a += EPSILON
+		b += EPSILON
+		var N = coord1.edgeDistance(coord2)
+		if N == 0:
+			return [coord1]
+
+		var out := []
+
+		for i in range(N + 1):
+			var t = float(i) / float(N)
+			var lerped = _cube_lerp(a, b, t)
+			var rounded = _cube_round(lerped)
+			var tri = Utils.Coordinates.new(0,0,0)
+			tri.setByCubeFace(rounded.x, rounded.y, rounded.z)
+			
+			out.append(tri)
+
+		return out
+
+
+	func _cube_lerp(a: Vector3, b: Vector3, t: float) -> Vector3:
+		return a + (b - a) * t
+
+
+	func _cube_round(v: Vector3) -> Vector3:
+		var rx = round(v.x)
+		var ry = round(v.y)
+		var rz = round(v.z)
+
+		var dx = abs(rx - v.x)
+		var dy = abs(ry - v.y)
+		var dz = abs(rz - v.z)
+
+		if dx > dy and dx > dz:
+			rx = -ry - rz
+		elif dy > dz:
+			ry = -rx - rz
+		else:
+			rz = -rx - ry
+
+		return Vector3(rx, ry, rz)
 ## Jogo things
 
 var MyBoard
@@ -323,7 +372,8 @@ func _draw():
 	#draw_triangle_pos(MyBoard.last_coords)
 	#draw_ring_edge_pos(MyBoard.last_coords)
 	draw_ring_pos(MyBoard.last_coords)
-	draw_triangle_pos_C(MyBoard.last_clicked_coords,Color.LIME_GREEN)
+	#draw_triangle_pos_C(MyBoard.last_clicked_coords,Color.LIME_GREEN)
+	draw_grid_line(MyBoard.last_clicked_coords,Color.LIME_GREEN)
 	
 func coords_to_triangle_points(InCoords:Utils.Coordinates, tile_size:float) -> PackedVector2Array:
 	var theta_base = 30
@@ -398,4 +448,11 @@ func draw_ring_pos(Coords:Utils.Coordinates):
 		c.setByCubeFace(x, y, z)
 		var pts = coords_to_triangle_points(c, MyBoard.TileSize)
 		var color = Color.BLUE if c.r else Color.RED
+		draw_polygon(pts, [color])
+
+func draw_grid_line(Coords:Utils.Coordinates, color):
+	if !Coords:
+		return
+	for c in MyBoard.find_line(Utils.Coordinates.new(),Coords):
+		var pts = coords_to_triangle_points(c, MyBoard.TileSize)
 		draw_polygon(pts, [color])
