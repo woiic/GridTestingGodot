@@ -12,6 +12,7 @@ class Board:
 	var BoardRef
 	var TileSize = 1
 	var last_coords = null
+	var last_clicked_coords = null
 	
 	var tablero = {}
 	
@@ -306,6 +307,9 @@ func _process(delta: float) -> void:
 	a = a+1
 	var mouse = get_viewport().get_mouse_position()
 	MyBoard.last_coords = Utils.Vector2ToCoords(mouse, MyBoard.TileSize)
+	if Input.is_action_just_pressed("left_click"):
+		MyBoard.last_clicked_coords = MyBoard.last_coords
+		print(MyBoard.last_clicked_coords)
 	queue_redraw() # redraw
 	#print("Mouse: ", mouse.x, ", ", mouse.y)
 	#print("Screen:", get_viewport().get_mouse_position())
@@ -316,9 +320,10 @@ func _draw():
 	if MyBoard.last_coords == null:
 		return
 	#print(MyBoard.last_coords.toCubeFace())
-	#draw_triangle_pos()
-	#draw_ring_edge_pos()
-	draw_ring_pos()
+	#draw_triangle_pos(MyBoard.last_coords)
+	#draw_ring_edge_pos(MyBoard.last_coords)
+	draw_ring_pos(MyBoard.last_coords)
+	draw_triangle_pos_C(MyBoard.last_clicked_coords,Color.LIME_GREEN)
 	
 func coords_to_triangle_points(InCoords:Utils.Coordinates, tile_size:float) -> PackedVector2Array:
 	var theta_base = 30
@@ -351,14 +356,26 @@ func coords_to_triangle_points(InCoords:Utils.Coordinates, tile_size:float) -> P
 
 
 
-func draw_triangle_pos():
-	#print(MyBoard.last_coords.toCubeFace())
-	var pts = coords_to_triangle_points(MyBoard.last_coords, MyBoard.TileSize)
-	var color = Color.BLUE if MyBoard.last_coords.r else Color.RED
+func draw_triangle_pos(Coords:Utils.Coordinates):
+	var pts = coords_to_triangle_points(Coords, MyBoard.TileSize)
+	var color = Color.BLUE if Coords.r != 0 else Color.RED
+
 	draw_polygon(pts, [color])
 
-func draw_ring_edge_pos():
-	var d = MyBoard.last_coords.edgeDistance()
+func draw_triangle_pos_C(Coords:Utils.Coordinates,desire_color: Color):
+	if !Coords:
+		return
+	var pts = coords_to_triangle_points(Coords, MyBoard.TileSize)
+
+	var color: Color
+	if desire_color == null:
+		color = Color.BLUE if Coords.r != 0 else Color.RED
+	else:
+		color = desire_color
+	draw_polygon(pts, [color])
+
+func draw_ring_edge_pos(Coords:Utils.Coordinates):
+	var d = Coords.edgeDistance()
 	var triplets = MyBoard.find_triplets(d)
 	for xyz in triplets:
 		var c = Utils.Coordinates.new()
@@ -370,8 +387,8 @@ func draw_ring_edge_pos():
 		var color = Color.BLUE if c.r else Color.RED
 		draw_polygon(pts, [color])
 		
-func draw_ring_pos():
-	var d = MyBoard.last_coords.vertexDistance()
+func draw_ring_pos(Coords:Utils.Coordinates):
+	var d = Coords.vertexDistance()
 	var triplets = MyBoard.find_triplets_max_eq(d)
 	for xyz in triplets:
 		var c = Utils.Coordinates.new()

@@ -88,7 +88,7 @@ class Coordinates:
 		return max( c_abs.x, c_abs.y, c_abs.z)
 	
 	func _to_string() -> String:
-		var ret = "(%d, %d, %d)" % [p, q, r]
+		var ret = "(%s, %s, %s)" % [str(p), str(q), str(r)]
 		return ret
 	
 #
