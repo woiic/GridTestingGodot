@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://d1rrxo4psh30t"]
+
+[ext_resource type="PackedScene" uid="uid://byy2dwu4ecbjk" path="res://Tablero.tscn" id="1_3mqji"]
+
+[node name="MainScene" type="Node2D"]
+
+[node name="Camera2D" type="Camera2D" parent="."]
+
+[node name="TBoard" parent="." instance=ExtResource("1_3mqji")]

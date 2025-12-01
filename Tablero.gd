@@ -22,7 +22,9 @@ class Board:
 			for j in Size[1]:
 				var c_low = Utils.Coordinates.new()
 				var c_high = Utils.Coordinates.new()
+				#c_low.setByPush(i , -j, Utils.TO.Low)
 				c_low.setByCuadratic(i , -j, Utils.TO.Low)
+				#c_high.setByPush(i , -j, Utils.TO.High)
 				c_high.setByCuadratic(i , -j, Utils.TO.High)
 				SpawnTile(c_low)
 				SpawnTile(c_high)
@@ -53,9 +55,9 @@ class Board:
 			var z = xyz[2]
 			var c = Utils.Coordinates.new()
 			c.setByCubeFace(x, y, z)
-			c = c.toCube()
+			#c = c.getCubeCoords()
 			#print(x,y,z)
-			#print(c.toCubeFace())
+			#print(c.getCubeFaceCoords())
 			SpawnTile(c)
 		print(len(triples))
 		return
@@ -69,9 +71,9 @@ class Board:
 			var z = xyz[2]
 			var c = Utils.Coordinates.new()
 			c.setByCubeFace(x, y, z)
-			c = c.toCube()
+			#c = c.getCubeCoords()
 			print(x,y,z)
-			print(c.toCubeFace())
+			print(c.getCubeFaceCoords())
 			print(c)
 			
 			SpawnTile(c)
@@ -87,9 +89,9 @@ class Board:
 			var z = xyz[2]
 			var c = Utils.Coordinates.new()
 			c.setByCubeFace(x, y, z)
-			c = c.toCube()
+			#c = c.getCubeCoords()
 			#print(x,y,z)
-			#print(c.toCubeFace())
+			#print(c.getCubeFaceCoords())
 			SpawnTile(c)
 		print(len(triples))
 		return
@@ -103,9 +105,9 @@ class Board:
 			var z = xyz[2]
 			var c = Utils.Coordinates.new()
 			c.setByCubeFace(x, y, z)
-			c = c.toCube()
+			#c = c.getCubeCoords()
 			print(x,y,z)
-			print(c.toCubeFace())
+			print(c.getCubeFaceCoords())
 			print(c)
 			
 			SpawnTile(c)
@@ -286,8 +288,8 @@ class Board:
 		return results.values()
 		
 	func find_line(coord1: Utils.Coordinates, coord2: Utils.Coordinates) -> Array:
-		var a = coord1.toCubeFace() # (x,y,z)
-		var b = coord2.toCubeFace() # (x,y,z)
+		var a = coord1.getCubeFaceCoords() # (x,y,z)
+		var b = coord2.getCubeFaceCoords() # (x,y,z)
 		print(a)
 		print(b)
 		# --- EPSILON NUDGE ---
@@ -355,6 +357,8 @@ func _process(delta: float) -> void:
 	var a = delta
 	a = a+1
 	var mouse = get_viewport().get_mouse_position()
+	var view_to_world_transform: Transform2D = get_viewport().get_canvas_transform().affine_inverse()
+	mouse = view_to_world_transform * mouse
 	MyBoard.last_coords = Utils.Vector2ToCoords(mouse, MyBoard.TileSize)
 	if Input.is_action_just_pressed("left_click"):
 		MyBoard.last_clicked_coords = MyBoard.last_coords
@@ -368,10 +372,10 @@ func _process(delta: float) -> void:
 func _draw():
 	if MyBoard.last_coords == null:
 		return
-	#print(MyBoard.last_coords.toCubeFace())
+	#print(MyBoard.last_coords.getCubeFaceCoords())
 	#draw_triangle_pos(MyBoard.last_coords)
 	#draw_ring_edge_pos(MyBoard.last_coords)
-	draw_ring_pos(MyBoard.last_coords)
+	#draw_ring_pos(MyBoard.last_coords)
 	#draw_triangle_pos_C(MyBoard.last_clicked_coords,Color.LIME_GREEN)
 	draw_grid_line(MyBoard.last_clicked_coords,Color.LIME_GREEN)
 	
@@ -381,7 +385,8 @@ func coords_to_triangle_points(InCoords:Utils.Coordinates, tile_size:float) -> P
 	var h = tile_size * cos(theta)
 	# 2) Convertir a pixeles (Y positivo hacia abajo)
 	
-	var vec = InCoords.toCube().ToVector2(tile_size)
+	#var vec = InCoords.getCubeCoords().ToVector2(tile_size)
+	var vec = InCoords.ToVector2(tile_size)
 	var cx = vec.x
 	var cy = vec.y
 	# 3) Altura del triángulo equilátero
@@ -408,7 +413,7 @@ func coords_to_triangle_points(InCoords:Utils.Coordinates, tile_size:float) -> P
 
 func draw_triangle_pos(Coords:Utils.Coordinates):
 	var pts = coords_to_triangle_points(Coords, MyBoard.TileSize)
-	var color = Color.BLUE if Coords.r != 0 else Color.RED
+	var color = Color.BLUE if Coords.r else Color.RED
 
 	draw_polygon(pts, [color])
 

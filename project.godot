@@ -11,13 +11,18 @@ config_version=5
 [application]
 
 config/name="TableroTesting"
-run/main_scene="uid://byy2dwu4ecbjk"
+run/main_scene="uid://d1rrxo4psh30t"
 config/features=PackedStringArray("4.5", "Forward Plus")
 config/icon="res://icon.svg"
 
 [autoload]
 
 Utils="*res://Utils.gd"
+
+[display]
+
+window/stretch/mode="viewport"
+window/stretch/aspect="expand"
 
 [input]
 

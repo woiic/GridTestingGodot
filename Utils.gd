@@ -1,6 +1,6 @@
 extends Node2D
 
-enum TO{Low = 0, High = 1}
+enum TO{Low = 0, High = 1, extra=2}
 
 class Tupla:
 	var a
@@ -11,28 +11,70 @@ class Tupla:
 		b = InB
 	
 
+class CubeFaceCoords:
+	var CP = 0
+	var CQ = 0
+	var CR = TO.Low
+	
+	func _init(InP=0, InQ=0, InR=TO.Low):
+		CP = InP
+		CQ = InQ
+		CR = InR
+		return
+		
+	func setValues(InP=0, InQ=0, InR=TO.Low):
+		CP = InP
+		CQ = InQ
+		CR = InR
+		return
+
 class Coordinates:
 	var p = 0
 	var q = 0
 	var r = TO.Low
+	var CubeCF = CubeFaceCoords.new()
 	
 	func _init(InP=0, InQ=0, InR=TO.Low):
 		p = InP
 		q = InQ
 		r = InR
+		# transform coords to cube face coords
+		setCubeCFValue()
 		return
+	
+	func setCubeCFValue():
+		CubeCF.setValues(int(r) + p - q, q, -p)
+		
 	
 	func setByCubeFace(x, y, z):
 		p = -z
 		q = y
 		r = x+y+z
+		setCubeCFValue()
 		return
-	func setByCuadratic(x, y, z):
+	
+	func setByPush(x, y, z):
 		p = x - y
 		q = y
 		r = z
+		setCubeCFValue()
 		return
-		
+	
+	func setByCube(x, y, z):
+		p = x + y
+		q = y
+		r = z
+		setCubeCFValue()
+		return
+	
+	func setByCuadratic(x, y, z):
+		p = x
+		q = y
+		r = z
+		setCubeCFValue()
+		return
+	
+	
 	func ToVector2(sizeLenght):
 		##var x = - q*(sizeLenght/2)  + r*(sizeLenght/2) 
 		##var x = (sqrt(3)/2*p + sqrt(3)/4 * q) * sizeLenght + r*(sizeLenght/2) 
@@ -48,7 +90,7 @@ class Coordinates:
 		var p_aux = p
 		var q_aux = -q
 		# 1) Convertir coord → centro matemático del triángulo
-		var x = p_aux - q_aux * sin(theta) 
+		var x = p_aux + q_aux * sin(theta) 
 		var y = -q_aux * cos(theta) 
 		
 		#x = p 
@@ -61,17 +103,17 @@ class Coordinates:
 			cx += (sizeLenght/2)
 		return Vector2(cx,cy)
 		
-	func toCuadratic():
+	func getPushCoords():
 		var x = p + q
 		var y = q
 		return Coordinates.new(x,y,r)
 	
-	func toCube():
+	func getCubeCoords():
 		var x = p - q
 		var y = q
 		return Coordinates.new(x,y,r)
 	
-	func toCubeFace():
+	func getCubeFaceCoords():
 		var pf = p - q
 		var qf = q
 		var sf = -p
@@ -81,12 +123,12 @@ class Coordinates:
 		
 	func edgeDistance(Coord: Utils.Coordinates = Utils.Coordinates.new()):
 		var dif = self.substract(Coord)
-		var c_abs = abs(dif.toCubeFace())
+		var c_abs = abs(dif.getCubeFaceCoords())
 		return c_abs.x + c_abs.y + c_abs.z
 	
 	func vertexDistance(Coord: Utils.Coordinates = Utils.Coordinates.new()):
 		var dif = self.substract(Coord)
-		var c_abs = abs(dif.toCubeFace())
+		var c_abs = abs(dif.getCubeFaceCoords())
 		return max( c_abs.x, c_abs.y, c_abs.z)
 	
 	func _to_string() -> String:
@@ -94,8 +136,8 @@ class Coordinates:
 		return ret
 	
 	func substract(Coord: Utils.Coordinates) -> Utils.Coordinates:
-		var vec1 = self.toCubeFace()
-		var vec2 = Coord.toCubeFace()
+		var vec1 = self.getCubeFaceCoords()
+		var vec2 = Coord.getCubeFaceCoords()
 		var dif = vec1 - vec2
 		var new_Coord = Utils.Coordinates.new()
 		new_Coord.setByCubeFace(dif.x,dif.y,dif.z)
@@ -166,8 +208,9 @@ func Vector2ToCoords(vec: Vector2, tile_size: float, invert_y := true) -> Utils.
 	if r:
 		pf += 1
 	#print("CoordCubeFace: p: ", pf, "  q: ", qf,"  s: ", sf)
-
-	return Utils.Coordinates.new(p0, -q0, r)
+	var tempC = Utils.Coordinates.new()
+	tempC.setByCuadratic(p0,-q0,r)
+	return tempC
 
 
 	
