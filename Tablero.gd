@@ -72,9 +72,9 @@ class Board:
 			var c = Utils.Coordinates.new()
 			c.setByCubeFace(x, y, z)
 			#c = c.getCubeCoords()
-			print(x,y,z)
-			print(c.getCubeFaceCoords())
-			print(c)
+			#print(x,y,z)
+			#print(c.getCubeFaceCoords())
+			#print(c)
 			
 			SpawnTile(c)
 		print(len(triples))
@@ -290,24 +290,16 @@ class Board:
 	func find_line(coord1: Utils.Coordinates, coord2: Utils.Coordinates) -> Array:
 		var a = coord1.getCubeFaceCoords() # (x,y,z)
 		var b = coord2.getCubeFaceCoords() # (x,y,z)
-		print(a)
-		print(b)
-		# --- EPSILON NUDGE ---
-		a += EPSILON
-		b += EPSILON
+
 		var N = coord1.edgeDistance(coord2)
 		if N == 0:
 			return [coord1]
 
 		var out := []
-
-		for i in range(N + 1):
-			var t = float(i) / float(N)
-			var lerped = _cube_lerp(a, b, t)
-			var rounded = _cube_round(lerped)
-			var tri = Utils.Coordinates.new(0,0,0)
-			tri.setByCubeFace(rounded.x, rounded.y, rounded.z)
-			
+		var pts = coord1.lerp_plane_points(coord2, TileSize)
+		
+		for e in pts:
+			var tri = Utils.Vector2ToCoords(e, TileSize)
 			out.append(tri)
 
 		return out
@@ -375,9 +367,10 @@ func _draw():
 	#print(MyBoard.last_coords.getCubeFaceCoords())
 	#draw_triangle_pos(MyBoard.last_coords)
 	#draw_ring_edge_pos(MyBoard.last_coords)
-	#draw_ring_pos(MyBoard.last_coords)
+	draw_ring_pos(MyBoard.last_coords)
 	#draw_triangle_pos_C(MyBoard.last_clicked_coords,Color.LIME_GREEN)
 	draw_grid_line(MyBoard.last_clicked_coords,Color.LIME_GREEN)
+	draw_lerp_points_in_plane(Utils.Coordinates.new(),MyBoard.last_clicked_coords,Color.BLACK,20)
 	
 func coords_to_triangle_points(InCoords:Utils.Coordinates, tile_size:float) -> PackedVector2Array:
 	var theta_base = 30
@@ -461,3 +454,12 @@ func draw_grid_line(Coords:Utils.Coordinates, color):
 	for c in MyBoard.find_line(Utils.Coordinates.new(),Coords):
 		var pts = coords_to_triangle_points(c, MyBoard.TileSize)
 		draw_polygon(pts, [color])
+
+func draw_lerp_points_in_plane(coord1: Utils.Coordinates, coord2: Utils.Coordinates, color: Color, radius := 20.0):
+	if !(coord1 and coord2):
+		return
+		
+	var pts = coord1.lerp_plane_points(coord2, MyBoard.TileSize)
+	for p in pts:
+		draw_circle(p, radius, color)
+		

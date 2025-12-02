@@ -1,7 +1,7 @@
 extends Node2D
 
 enum TO{Low = 0, High = 1, extra=2}
-
+const EPSILON := Vector2(4e-6, 5e-6)
 class Tupla:
 	var a
 	var b
@@ -50,6 +50,10 @@ class Coordinates:
 		p = -z
 		q = y
 		r = x+y+z
+		if r == -1:
+			p = -p
+			q = -q
+			r = -r
 		setCubeCFValue()
 		return
 	
@@ -73,9 +77,19 @@ class Coordinates:
 		r = z
 		setCubeCFValue()
 		return
+	func getCenter(sizeLenght):
+		var displacement = Vector2(0,-sqrt(3)/12)
+		var center = ToVector2(sizeLenght) 
+		if r:
+			center -= sizeLenght * displacement - EPSILON
+		else:
+			center += sizeLenght * displacement - EPSILON
+		return center
+		
 	
 	
 	func ToVector2(sizeLenght):
+		var center = Vector2(1.0/2.0,sqrt(3)/4) 
 		##var x = - q*(sizeLenght/2)  + r*(sizeLenght/2) 
 		##var x = (sqrt(3)/2*p + sqrt(3)/4 * q) * sizeLenght + r*(sizeLenght/2) 
 		#var x = q*(sizeLenght/2) + p*sizeLenght 
@@ -90,8 +104,8 @@ class Coordinates:
 		var p_aux = p
 		var q_aux = -q
 		# 1) Convertir coord → centro matemático del triángulo
-		var x = p_aux + q_aux * sin(theta) 
-		var y = -q_aux * cos(theta) 
+		var x = p_aux + q_aux * sin(theta)
+		var y = -q_aux * cos(theta)
 		
 		#x = p 
 		#y = -q
@@ -142,6 +156,38 @@ class Coordinates:
 		var new_Coord = Utils.Coordinates.new()
 		new_Coord.setByCubeFace(dif.x,dif.y,dif.z)
 		return new_Coord
+	
+	func lerp_plane_points(coord2: Utils.Coordinates, TileSize) -> Array:
+		var N = self.edgeDistance(coord2)
+		var v1 = self.getCenter(TileSize)
+		var v2 = coord2.getCenter(TileSize)
+		var dif = self.substract(coord2)
+		var c_abs = abs(dif.getCubeFaceCoords())
+		var d =  c_abs.x + c_abs.y + c_abs.z
+		var dif2 = self.getCubeFaceCoords() - coord2.getCubeFaceCoords()
+		var dif2_coord = Utils.Coordinates.new()
+		dif2_coord.setByCubeFace(dif2.x,dif2.y, dif2.z)
+		#print("c1 : ", self)
+		#print("c2 : ", coord2)
+		#print("c1_CF : ", self.getCubeFaceCoords())
+		#print("c2_CF : ", coord2.getCubeFaceCoords())
+		#print("dif : ", dif)
+		#print("dif2 : ", dif2)
+		#print("dif2_FC : ", dif2_coord.getCubeFaceCoords())
+		#print("d : ",d)
+		#print("N : ", N)
+		var out: Array = []
+
+		if N == 0:
+			out.append(v1)
+			return out
+
+		for i in range(N + 1):
+			var t = float(i) / float(N)
+			var p = v1 + (v2 - v1) * t
+			out.append(p)
+
+		return out
 #
 #
 #
@@ -212,8 +258,30 @@ func Vector2ToCoords(vec: Vector2, tile_size: float, invert_y := true) -> Utils.
 	tempC.setByCuadratic(p0,-q0,r)
 	return tempC
 
+func Vector2ToSubspace(vec:Vector2):
+	#var center = Vector2(1.0/2.0,sqrt(3)/4) 
+	var theta_base = 30
+	var theta = PI * -theta_base / 180
+	var l = vec.x  
+	var t = -vec.y
 
-	
+	# skewed / rhombus coordinates (same transform you used)
+	var x = l - t * tan(theta) 
+	var y = -t * 1/cos(theta) 
+	return Vector2(x,y)
+
+func SubspaceToVector2(vec:Vector2):
+	#var center = Vector2(1.0/2.0,sqrt(3)/4) 
+	var theta_base = -30
+	var theta = PI * -theta_base / 180
+	var l = vec.x  
+	var t = -vec.y
+
+	# skewed / rhombus coordinates (same transform you used)
+	var x = l - t * tan(theta) 
+	var y = -t * 1/cos(theta) 
+	return Vector2(x,y)
+
 
 class CoordinatesCF:
 	var a = 0
