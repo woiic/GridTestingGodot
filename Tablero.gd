@@ -322,8 +322,6 @@ class Board:
 		return find_triplets_leq(2 * n)
 	
 	func find_line(coord1: Utils.Coordinates, coord2: Utils.Coordinates) -> Array:
-		var a = coord1.getCubeFaceCoords() # (x,y,z)
-		var b = coord2.getCubeFaceCoords() # (x,y,z)
 
 		var N = coord1.edgeDistance(coord2)
 		if N == 0:
@@ -335,6 +333,40 @@ class Board:
 		for e in pts:
 			var tri = Utils.Vector2ToCoords(e, TileSize)
 			out.append(tri)
+
+		return out
+	
+	func find_weak_line(coord1: Utils.Coordinates, coord2: Utils.Coordinates) -> Array:
+		var N = coord1.weakDistance(coord2)
+		if N == 0:
+			return [coord1]
+
+		var out := []
+		var pts = coord1.lerp_plane_weak_points(coord2)
+		var i = 0
+		for e in pts:
+			var tri = Utils.Coordinates.new()
+			var x = e.x
+			var y = e.y
+			var z = e.z
+			if Utils.classify_hex_coset_direct(x,y,z):
+				tri.setByWCube(e.x,e.y,e.z)
+			else:
+				var dir1 = e - pts[i-1]
+				var dir2 = pts[i+1] - e
+				if dir1 != dir2:
+					var c = pts[i-1] + dir2
+					tri.setByWCube(c.x,c.y,c.z)
+				else:
+					var F = Utils.Coordinates.new()
+					var dir3 = Utils.rotateWeakCube(dir1)
+					var f = pts[i-1] + dir3
+					var g = e + dir3
+					F.setByWCube(f.x,f.y,f.z)
+					out.append(F)
+					tri.setByWCube(g.x,g.y,g.z)
+			out.append(tri)
+			i += 1
 
 		return out
 
@@ -367,7 +399,7 @@ var MyBoard
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	MyBoard = Board.new()
-	MyBoard.Size = [12,12]
+	MyBoard.Size = [15,15]
 	MyBoard.BoardRef = TBoard
 	MyBoard.TileSize = 202
 	#MyBoard.DisplayAxialBoard()
@@ -408,8 +440,9 @@ func _draw():
 	#draw_ring_pos(MyBoard.last_coords)
 	draw_weak_ring_pos(MyBoard.last_coords)
 	#draw_triangle_pos_C(MyBoard.last_clicked_coords,Color.LIME_GREEN)
-	draw_grid_line(MyBoard.last_clicked_coords,Color.LIME_GREEN)
-	draw_lerp_points_in_plane(Utils.Coordinates.new(),MyBoard.last_clicked_coords,Color.BLACK,20)
+	#draw_grid_line(MyBoard.last_clicked_coords,Color.LIME_GREEN)
+	draw_weak_grid_line(MyBoard.last_clicked_coords,Color.LIME_GREEN)
+	#draw_lerp_points_in_plane(Utils.Coordinates.new(),MyBoard.last_clicked_coords,Color.BLACK,20)
 	
 func coords_to_triangle_points(InCoords:Utils.Coordinates, tile_size:float) -> PackedVector2Array:
 	var theta_base = 30
@@ -508,6 +541,13 @@ func draw_grid_line(Coords:Utils.Coordinates, color):
 	if !Coords:
 		return
 	for c in MyBoard.find_line(Utils.Coordinates.new(),Coords):
+		var pts = coords_to_triangle_points(c, MyBoard.TileSize)
+		draw_polygon(pts, [color])
+
+func draw_weak_grid_line(Coords :Utils.Coordinates, color):
+	if !Coords:
+		return
+	for c in MyBoard.find_weak_line(Utils.Coordinates.new(),Coords):
 		var pts = coords_to_triangle_points(c, MyBoard.TileSize)
 		draw_polygon(pts, [color])
 

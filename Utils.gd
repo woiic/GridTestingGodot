@@ -2,6 +2,7 @@ extends Node2D
 
 enum TO{Low = 0, High = 1, Vertex = -1, extra=2}
 const EPSILON := Vector2(4e-6, 5e-6)
+const EPSILON3 := Vector3(1e-6, 2e-5, -3e-6)
 class Tupla:
 	var a
 	var b
@@ -253,6 +254,51 @@ class Coordinates:
 			out.append(point)
 
 		return out
+	
+	func lerp_plane_weak_points(coord2: Utils.Coordinates) -> Array:
+		var N = self.weakDistance(coord2)
+		print("N : ", N)
+		var v1 = self.getWCubeCoords()
+		var v2 = coord2.getWCubeCoords()
+		var out: Array = []
+
+		if N == 0:
+			out.append(v1)
+			return out
+			
+		#v1 += EPSILON3*100
+		#v2 -= EPSILON3*100
+		
+		for i in range(N + 1):
+			var t = float(i) / float(N)
+			var unround = v1 + (v2 - v1) * t
+			var point = round(unround)
+			var check = abs(unround - point)
+			var check2 = unround - point
+
+			print("UnroundPoint ", i, " : ", unround)
+			print("Point ", i, " : ", point)
+
+			# --- Apply your correction rule ---
+			# If a pair is exactly 0.5, adjust the rounded point
+			# We check each pair: (x,y), (y,z), (x,z)
+
+			# Pair (x, y)
+			if abs(check.x - 0.5) < 0.0001 and abs(check.y - 0.5) < 0.0001:
+				point.x += round(check2.x)
+
+			# Pair (y, z)
+			elif abs(check.y - 0.5) < 0.0001 and abs(check.z - 0.5) < 0.0001:
+				point.y += round(check2.y)
+
+			# Pair (x, z)
+			elif abs(check.x - 0.5) < 0.0001 and abs(check.z - 0.5) < 0.0001:
+				point.x += round(check2.x)
+			
+			print("PointAfter ", i, " : ", point)
+			out.append(point)
+
+		return out
 #
 #
 #
@@ -377,6 +423,11 @@ func SubspaceToVector2(vec:Vector2):
 	var y = -t * 1/cos(theta) 
 	return Vector2(x,y)
 
+func rotateWeakCube(vec : Vector3):
+	var x = vec.x
+	var y = vec.y
+	var z = vec.z
+	return Vector3(-y,-z,-x)
 
 class CoordinatesCF:
 	var a = 0
