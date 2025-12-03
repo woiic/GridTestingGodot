@@ -336,7 +336,7 @@ var MyBoard
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	MyBoard = Board.new()
-	MyBoard.Size = [6,6]
+	MyBoard.Size = [12,12]
 	MyBoard.BoardRef = TBoard
 	MyBoard.TileSize = 202
 	#MyBoard.DisplayAxialBoard()

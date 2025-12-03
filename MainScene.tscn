@@ -5,6 +5,6 @@
 [node name="MainScene" type="Node2D"]
 
 [node name="Camera2D" type="Camera2D" parent="."]
-zoom = Vector2(0.6, 0.6)
+zoom = Vector2(0.2, 0.2)
 
 [node name="TBoard" parent="." instance=ExtResource("1_3mqji")]
