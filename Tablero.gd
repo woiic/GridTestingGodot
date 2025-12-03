@@ -79,7 +79,35 @@ class Board:
 			SpawnTile(c)
 		print(len(triples))
 		return
+	
+	func DisplayWeakRadialBoard():
+		var n =  Size[0]
+		var triples = find_weak_triplets_leq(n)
+		for xyz in triples:
+			var x = xyz[0]
+			var y = xyz[1]
+			var z = xyz[2]
+			var c = Utils.Coordinates.new()
+			if Utils.classify_hex_coset_direct(x,y,z):
+				c.setByWCube(x, y, z)
+				SpawnTile(c)
+		return
 		
+	func DisplayWeakRingBoard():
+		var n =  Size[0]
+		var triples = find_weak_triplets(n)
+		for xyz in triples:
+			var x = xyz[0]
+			var y = xyz[1]
+			var z = xyz[2]
+			var c = Utils.Coordinates.new()
+			if Utils.classify_hex_coset_direct(x,y,z):
+				c.setByWCube(x, y, z)
+				SpawnTile(c)
+		return
+	
+	
+	
 	func DisplayRadialBoard():
 		var n =  Size[0]
 		var triples = find_triplets_max_leq(n)
@@ -290,6 +318,9 @@ class Board:
 	func find_weak_triplets(n : int):
 		return find_triplets(2 * n)
 	
+	func find_weak_triplets_leq(n : int):
+		return find_triplets_leq(2 * n)
+	
 	func find_line(coord1: Utils.Coordinates, coord2: Utils.Coordinates) -> Array:
 		var a = coord1.getCubeFaceCoords() # (x,y,z)
 		var b = coord2.getCubeFaceCoords() # (x,y,z)
@@ -342,8 +373,10 @@ func _ready() -> void:
 	#MyBoard.DisplayAxialBoard()
 	#MyBoard.DisplayRingBoardEdge()
 	#MyBoard.DisplayRadialBoardEdge()
+	#MyBoard.DisplayWeakRingBoard()
+	MyBoard.DisplayWeakRadialBoard()
 	#MyBoard.DisplayRingBoard()
-	MyBoard.DisplayRadialBoard()
+	#MyBoard.DisplayRadialBoard()
 	return
 
 
