@@ -1,6 +1,6 @@
 extends Node2D
 
-enum TO{Low = 0, High = 1, extra=2}
+enum TO{Low = 0, High = 1, Vertex = -1, extra=2}
 const EPSILON := Vector2(4e-6, 5e-6)
 class Tupla:
 	var a
@@ -77,6 +77,41 @@ class Coordinates:
 		r = z
 		setCubeCFValue()
 		return
+	
+	func setByWCube(x,y,z):
+		if x + y + z != 0:
+			push_error("Not a cube coordinate: x+y+z must be 0")
+			return Vector3.ZERO
+		var coset = Utils.classify_hex_coset_direct(x, y, z)
+		var C: Vector3
+		if coset == 0:
+			r = -1
+			C = Vector3(1, -1, 0)      # C0
+		elif coset == 1:
+			r = 0
+			C = Vector3(0,  0, 0)      # C1
+		elif coset == 2:
+			r = 1
+			C = Vector3(-1, 1, 0)      # C2
+		else:
+			push_error("Invalid coset")
+			return Vector3.ZERO
+		
+		var coord = Vector3(x,y,z)
+		var X = coord - C
+		var Xx = X.x
+		var Xy = X.y
+		
+		var num_p = int(Xx + 2 * Xy)
+		var num_q = int(2 * Xx + Xy)
+		
+		if num_p % 3 != 0 or num_q % 3 != 0:
+			push_error("Point not representable as integer (p,q)")
+			return Vector3.ZERO
+		p = floor(num_p / 3)
+		q = floor(num_q / 3)
+
+	
 	func getCenter(sizeLenght):
 		var displacement = Vector2(0,-sqrt(3)/12)
 		var center = ToVector2(sizeLenght) 
@@ -89,7 +124,7 @@ class Coordinates:
 	
 	
 	func ToVector2(sizeLenght):
-		var center = Vector2(1.0/2.0,sqrt(3)/4) 
+		#var center = Vector2(1.0/2.0,sqrt(3)/4) 
 		##var x = - q*(sizeLenght/2)  + r*(sizeLenght/2) 
 		##var x = (sqrt(3)/2*p + sqrt(3)/4 * q) * sizeLenght + r*(sizeLenght/2) 
 		#var x = q*(sizeLenght/2) + p*sizeLenght 
@@ -109,7 +144,6 @@ class Coordinates:
 		
 		#x = p 
 		#y = -q
-		var h = sizeLenght * cos(theta)
 		# 2) Convertir a pixeles (Y positivo hacia abajo)
 		var cx = x * sizeLenght 
 		var cy = -y * sizeLenght
@@ -134,7 +168,32 @@ class Coordinates:
 		if r:
 			pf += 1
 		return Vector3(pf, qf, sf)
-		
+	
+	func getWCubeCoords():
+		# Class representatives
+		var C0 := Vector3( 1, -1,  0)   # r = -1 (vertex)
+		var C1 := Vector3( 0,  0,  0)   # r =  0 (down triangle)
+		var C2 := Vector3(-1,  1,  0)   # r =  1 (up triangle)
+
+		# Basis vectors
+		var V1 := Vector3(-1,  2, -1)
+		var V2 := Vector3( 2, -1, -1)
+		# Pick the coset representative
+		var C: Vector3
+		match r:
+			-1:
+				C = C0
+			0:
+				C = C1
+			1:
+				C = C2
+			_:
+				push_error("r must be -1, 0, or 1")
+				return Vector3.ZERO
+		# Compute C + p*V1 + q*V2
+		return C + V1 * float(p) + V2 * float(q)
+	
+	
 	func edgeDistance(Coord: Utils.Coordinates = Utils.Coordinates.new()):
 		var dif = self.substract(Coord)
 		var c_abs = abs(dif.getCubeFaceCoords())
@@ -144,6 +203,12 @@ class Coordinates:
 		var dif = self.substract(Coord)
 		var c_abs = abs(dif.getCubeFaceCoords())
 		return max( c_abs.x, c_abs.y, c_abs.z)
+	
+	func weakDistance(Coord: Utils.Coordinates = Utils.Coordinates.new()):
+		var dif = self.getWCubeCoords() - Coord.getWCubeCoords()
+		var c_abs = abs(dif)
+		return max( c_abs.x, c_abs.y, c_abs.z)
+	
 	
 	func _to_string() -> String:
 		var ret = "(%s, %s, %s)" % [str(p), str(q), str(r)]
@@ -161,9 +226,9 @@ class Coordinates:
 		var N = self.edgeDistance(coord2)
 		var v1 = self.getCenter(TileSize)
 		var v2 = coord2.getCenter(TileSize)
-		var dif = self.substract(coord2)
-		var c_abs = abs(dif.getCubeFaceCoords())
-		var d =  c_abs.x + c_abs.y + c_abs.z
+		#var dif = self.substract(coord2)
+		#var c_abs = abs(dif.getCubeFaceCoords())
+		#var d =  c_abs.x + c_abs.y + c_abs.z
 		var dif2 = self.getCubeFaceCoords() - coord2.getCubeFaceCoords()
 		var dif2_coord = Utils.Coordinates.new()
 		dif2_coord.setByCubeFace(dif2.x,dif2.y, dif2.z)
@@ -184,8 +249,8 @@ class Coordinates:
 
 		for i in range(N + 1):
 			var t = float(i) / float(N)
-			var p = v1 + (v2 - v1) * t
-			out.append(p)
+			var point = v1 + (v2 - v1) * t
+			out.append(point)
 
 		return out
 #
@@ -218,11 +283,41 @@ func _sign_assignments(count: int, current: Array, out: Array) -> void:
 	current.append(1)
 	_sign_assignments(count, current, out)
 	current.pop_back()
+
+func classify_hex_coset_direct(x: int, y: int, z: int) -> int:
+	# Ensure cube constraint
+	if x + y + z != 0:
+		push_error("Not a cube coordinate: x + y + z must be 0")
+		return -1
+
+	var rx = posmod(x, 3)
+	var ry = posmod(y, 3)
+	var rz = posmod(z, 3)
+
+	var s = posmod((rx - rz), 3)
+	var t = posmod((ry - rz), 3)
+
+	# (s, t) pattern defines the coset:
+	# class 1 → C1
+	if s == 0 and t == 0:
+		return 1
+
+	# class 0 → C0
+	if s == 1 and t == 2:
+		return 0
+
+	# class 2 → C2
+	if s == 2 and t == 1:
+		return 2
+
+	push_error("Unexpected residue pattern: %d, %d, %d" % [rx, ry, rz])
+	return -1
+
 ####################
 #
 
 
-func Vector2ToCoords(vec: Vector2, tile_size: float, invert_y := true) -> Utils.Coordinates:
+func Vector2ToCoords(vec: Vector2, tile_size: float) -> Utils.Coordinates:
 	var center = Vector2(1.0/2.0,sqrt(3)/4) 
 	#center = Vector2(0,0)
 	var theta_base = 30
@@ -242,17 +337,17 @@ func Vector2ToCoords(vec: Vector2, tile_size: float, invert_y := true) -> Utils.
 	var v = y - q0    # fractional part 0..1
 
 	# triangle half: lower if u+v < 1, upper if >= 1
-	var r = (u + v >= 1)
+	var r = int(u + v >= 1)
 
 	# debug: see values while testing
 	#print("vec=", vec, " -> p_f=", p_f, " q_f=", q_f, " p0=", p0, " q0=", q0, " u+v=", u+v, " r=", r)
 	#print("CoordCuadr : x: ", p0, "  y: ", -q0,"  r: ", r)
 	#print("CoordCube: p: ", p0 + q0, "  q: ", -q0,"  r: ", r)
-	var pf = p0 + q0
-	var qf = -q0
-	var sf = -p0
-	if r:
-		pf += 1
+	#var pf = p0 + q0
+	#var qf = -q0
+	#var sf = -p0
+	#if r:
+		#pf += 1
 	#print("CoordCubeFace: p: ", pf, "  q: ", qf,"  s: ", sf)
 	var tempC = Utils.Coordinates.new()
 	tempC.setByCuadratic(p0,-q0,r)

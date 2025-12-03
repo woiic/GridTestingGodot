@@ -286,7 +286,10 @@ class Board:
 				results[str(xyz)] = xyz
 
 		return results.values()
-		
+	
+	func find_weak_triplets(n : int):
+		return find_triplets(2 * n)
+	
 	func find_line(coord1: Utils.Coordinates, coord2: Utils.Coordinates) -> Array:
 		var a = coord1.getCubeFaceCoords() # (x,y,z)
 		var b = coord2.getCubeFaceCoords() # (x,y,z)
@@ -354,7 +357,9 @@ func _process(delta: float) -> void:
 	MyBoard.last_coords = Utils.Vector2ToCoords(mouse, MyBoard.TileSize)
 	if Input.is_action_just_pressed("left_click"):
 		MyBoard.last_clicked_coords = MyBoard.last_coords
-		print(MyBoard.last_clicked_coords)
+		print("Coord : ", MyBoard.last_clicked_coords)
+		print("Coord_CF : ", MyBoard.last_clicked_coords.getCubeFaceCoords())
+		print("Coord_WC : ", MyBoard.last_clicked_coords.getWCubeCoords())
 	queue_redraw() # redraw
 	#print("Mouse: ", mouse.x, ", ", mouse.y)
 	#print("Screen:", get_viewport().get_mouse_position())
@@ -367,7 +372,8 @@ func _draw():
 	#print(MyBoard.last_coords.getCubeFaceCoords())
 	#draw_triangle_pos(MyBoard.last_coords)
 	#draw_ring_edge_pos(MyBoard.last_coords)
-	draw_ring_pos(MyBoard.last_coords)
+	#draw_ring_pos(MyBoard.last_coords)
+	draw_weak_ring_pos(MyBoard.last_coords)
 	#draw_triangle_pos_C(MyBoard.last_clicked_coords,Color.LIME_GREEN)
 	draw_grid_line(MyBoard.last_clicked_coords,Color.LIME_GREEN)
 	draw_lerp_points_in_plane(Utils.Coordinates.new(),MyBoard.last_clicked_coords,Color.BLACK,20)
@@ -448,6 +454,23 @@ func draw_ring_pos(Coords:Utils.Coordinates):
 		var color = Color.BLUE if c.r else Color.RED
 		draw_polygon(pts, [color])
 
+func draw_weak_ring_pos(Coords:Utils.Coordinates):
+	var d = Coords.weakDistance()
+	var triplets = MyBoard.find_weak_triplets(d)
+	#print("d: ", d)
+	#print("Triplets: ")
+	for xyz in triplets:
+		#print("xyz : ", xyz)
+		var c = Utils.Coordinates.new()
+		var x = xyz[0]
+		var y = xyz[1]
+		var z = xyz[2]
+		#print("class : ", Utils.classify_hex_coset_direct(x,y,z))
+		if Utils.classify_hex_coset_direct(x,y,z) !=0:
+			c.setByWCube(x, y, z)
+			var pts = coords_to_triangle_points(c, MyBoard.TileSize)
+			var color = Color.BLUE if c.r else Color.RED
+			draw_polygon(pts, [color])
 func draw_grid_line(Coords:Utils.Coordinates, color):
 	if !Coords:
 		return
