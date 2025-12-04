@@ -443,9 +443,9 @@ func _draw():
 		return
 	#print(MyBoard.last_coords.getCubeFaceCoords())
 	#draw_triangle_pos(MyBoard.last_coords)
-	draw_ring_edge_pos(MyBoard.last_coords)
+	#draw_ring_edge_pos(MyBoard.last_coords)
 	#draw_ring_pos(MyBoard.last_coords)
-	#draw_weak_ring_pos(MyBoard.last_coords)
+	draw_weak_ring_pos(MyBoard.last_coords)
 	#draw_triangle_pos_C(MyBoard.last_clicked_coords,Color.LIME_GREEN)
 	#draw_grid_line(MyBoard.last_clicked_coords,Color.LIME_GREEN)
 	#draw_weak_grid_line(MyBoard.last_clicked_coords,Color.LIME_GREEN)
