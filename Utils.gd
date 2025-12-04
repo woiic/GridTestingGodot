@@ -402,6 +402,46 @@ func Vector2ToCoords(vec: Vector2, tile_size: float) -> Utils.Coordinates:
 	tempC.setByCuadratic(p0,-q0,r)
 	return tempC
 
+
+func Vector2ToHex(vec: Vector2, tile_size: float) -> Vector3:
+	var center = Vector2(1.0/2.0,sqrt(3)/4) 
+	#center = Vector2(0,0)
+	# convert to tile units; flip Y if needed because screen Y goes down
+	var size = tile_size/ sqrt(3)
+	var l = vec.x / size  + center.x
+	var t = -vec.y / size  - center.y
+	#print("l : ", l)
+	#print("t : ", t)
+	# skewed / rhombus coordinates (same transform you used)
+	var x = sqrt(3)/3 * l - 1/3 * t
+	var y = -t * 2/3
+	#print("x : ", x)
+	#print("y : ", y)
+	var p0 : int = ceil(x)
+	var q0 : int = ceil(y)
+
+	# triangle half: lower if u+v < 1, upper if >= 1
+	var r = -p0 + q0
+
+	# debug: see values while testing
+	#print("Offset : col : ", p0 , " row : ", -q0)
+	var parity = posmod(q0, 2)
+	#print("Cube : p : ", p0 - (q0 + parity)/2 , " q : ", -q0, " r : ", q0 - (p0 - (q0 + parity)/2 ))
+	#print("Cube2 : p : ", p0 - (q0 + parity)/2 + q0, " q : ", -q0, " r : ", - (p0 - (q0 + parity)/2 ))
+	return Vector3(p0 - (q0 + parity)/2 + q0, -q0, - (p0 - (q0 + parity)/2 ))
+
+
+func Vector2ToHexCoord(vec: Vector2, tile_size: float) -> Utils.Coordinates:
+	var Hex = Vector2ToHex(vec, tile_size)
+	var Coord = Utils.Coordinates.new()
+	Coord.setByCube(Hex.x,Hex.y, TO.Vertex)
+	return Coord
+
+
+
+
+
+
 func Vector2ToSubspace(vec:Vector2):
 	#var center = Vector2(1.0/2.0,sqrt(3)/4) 
 	var theta_base = 30

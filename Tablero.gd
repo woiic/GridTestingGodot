@@ -12,6 +12,8 @@ class Board:
 	var BoardRef
 	var TileSize = 1
 	var last_coords = null
+	var last_hex = null
+	var last_vertex = null
 	var last_clicked_coords = null
 	const EPSILON := Vector3(1e-6, 2e-6, -3e-6)
 	
@@ -420,11 +422,15 @@ func _process(delta: float) -> void:
 	var view_to_world_transform: Transform2D = get_viewport().get_canvas_transform().affine_inverse()
 	mouse = view_to_world_transform * mouse
 	MyBoard.last_coords = Utils.Vector2ToCoords(mouse, MyBoard.TileSize)
+	MyBoard.last_hex = Utils.Vector2ToHex(mouse, MyBoard.TileSize)
+	MyBoard.last_vertex = Utils.Vector2ToHexCoord(mouse, MyBoard.TileSize)
 	if Input.is_action_just_pressed("left_click"):
 		MyBoard.last_clicked_coords = MyBoard.last_coords
-		print("Coord : ", MyBoard.last_clicked_coords)
-		print("Coord_CF : ", MyBoard.last_clicked_coords.getCubeFaceCoords())
-		print("Coord_WC : ", MyBoard.last_clicked_coords.getWCubeCoords())
+		print("Last Hex: ", MyBoard.last_hex)
+		print("Last Vertex: ", MyBoard.last_vertex)
+		#print("Coord : ", MyBoard.last_clicked_coords)
+		#print("Coord_CF : ", MyBoard.last_clicked_coords.getCubeFaceCoords())
+		#print("Coord_WC : ", MyBoard.last_clicked_coords.getWCubeCoords())
 	queue_redraw() # redraw
 	#print("Mouse: ", mouse.x, ", ", mouse.y)
 	#print("Screen:", get_viewport().get_mouse_position())
@@ -441,7 +447,7 @@ func _draw():
 	#draw_weak_ring_pos(MyBoard.last_coords)
 	#draw_triangle_pos_C(MyBoard.last_clicked_coords,Color.LIME_GREEN)
 	#draw_grid_line(MyBoard.last_clicked_coords,Color.LIME_GREEN)
-	draw_weak_grid_line(MyBoard.last_clicked_coords,Color.LIME_GREEN)
+	#draw_weak_grid_line(MyBoard.last_clicked_coords,Color.LIME_GREEN)
 	#draw_lerp_points_in_plane(Utils.Coordinates.new(),MyBoard.last_clicked_coords,Color.BLACK,20)
 	
 func coords_to_triangle_points(InCoords:Utils.Coordinates, tile_size:float) -> PackedVector2Array:
