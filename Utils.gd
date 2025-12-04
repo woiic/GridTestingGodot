@@ -150,7 +150,7 @@ class Coordinates:
 		var cx = x * sizeLenght 
 		var cy = -y * sizeLenght
 		if r == TO.Vertex:
-			return Vector2(cx,cy) - center
+			return Vector2(cx,cy) - center * sizeLenght
 		if r:
 			cx += (sizeLenght/2)
 		return Vector2(cx,cy)
@@ -404,31 +404,38 @@ func Vector2ToCoords(vec: Vector2, tile_size: float) -> Utils.Coordinates:
 
 
 func Vector2ToHex(vec: Vector2, tile_size: float) -> Vector3:
-	var center = Vector2(1.0/2.0,sqrt(3)/4) 
+	print("Mouse: ", vec.x, ", ", vec.y)
+	var displacement = Vector2(0, sqrt(3)/ 12)
+	var center = Vector2(1.0/2.0,sqrt(3)/4.0) 
 	#center = Vector2(0,0)
 	# convert to tile units; flip Y if needed because screen Y goes down
-	var size = tile_size/ sqrt(3)
-	var l = vec.x / size  + center.x
-	var t = -vec.y / size  - center.y
-	#print("l : ", l)
-	#print("t : ", t)
+	#var size = tile_size/ sqrt(3)
+	#var l = vec.x / size  + center.x
+	#var t = -vec.y / size  - center.y 
+	#print("l : ", l, " t : ", t)
 	# skewed / rhombus coordinates (same transform you used)
-	var x = sqrt(3)/3 * l - 1/3 * t
-	var y = -t * 2/3
-	#print("x : ", x)
-	#print("y : ", y)
-	var p0 : int = ceil(x)
-	var q0 : int = ceil(y)
+	#var x = sqrt(3)/3.0 * l - 1.0/3.0 * t 
+	#var y = -t * 2/3.0 
+	#print("x : ", x, "y : ", y)
+	#var p0 : int = ceil(x)
+	#var q0 : int = ceil(y)
+	var x = vec.x / (tile_size) + center.x
+	var y = -vec.y / (tile_size) - center.y
+	var temp = floor(x + sqrt(3) * y + 1)
+	var p0 = floor((floor(2*x+1) + temp) / 3.0);
+	var q0 = floor((temp + floor(-x + sqrt(3) * y + 1))/3.0);
 
 	# triangle half: lower if u+v < 1, upper if >= 1
-	var r = -p0 + q0
+	#var r = -p0 + q0
 
 	# debug: see values while testing
 	#print("Offset : col : ", p0 , " row : ", -q0)
-	var parity = posmod(q0, 2)
+	#var parity = posmod(q0, 2)
 	#print("Cube : p : ", p0 - (q0 + parity)/2 , " q : ", -q0, " r : ", q0 - (p0 - (q0 + parity)/2 ))
 	#print("Cube2 : p : ", p0 - (q0 + parity)/2 + q0, " q : ", -q0, " r : ", - (p0 - (q0 + parity)/2 ))
-	return Vector3(p0 - (q0 + parity)/2 + q0, -q0, - (p0 - (q0 + parity)/2 ))
+	#return Vector3(p0 - (q0 + parity)/2 + q0, -q0, - (p0 - (q0 + parity)/2 ))
+	#return Vector3(p0 - (q0 + parity)/2 , -q0, - (p0 - (q0 + parity)/2 ) + q0)
+	return Vector3(p0 - q0, q0, -p0)
 
 
 func Vector2ToHexCoord(vec: Vector2, tile_size: float) -> Utils.Coordinates:

@@ -426,13 +426,14 @@ func _process(delta: float) -> void:
 	MyBoard.last_vertex = Utils.Vector2ToHexCoord(mouse, MyBoard.TileSize)
 	if Input.is_action_just_pressed("left_click"):
 		MyBoard.last_clicked_coords = MyBoard.last_coords
+		#print("Mouse: ", mouse.x, ", ", mouse.y)
 		print("Last Hex: ", MyBoard.last_hex)
 		print("Last Vertex: ", MyBoard.last_vertex)
 		#print("Coord : ", MyBoard.last_clicked_coords)
 		#print("Coord_CF : ", MyBoard.last_clicked_coords.getCubeFaceCoords())
 		#print("Coord_WC : ", MyBoard.last_clicked_coords.getWCubeCoords())
 	queue_redraw() # redraw
-	#print("Mouse: ", mouse.x, ", ", mouse.y)
+	
 	#print("Screen:", get_viewport().get_mouse_position())
 	#print("World:", get_global_mouse_position())
 	pass
@@ -449,6 +450,7 @@ func _draw():
 	#draw_grid_line(MyBoard.last_clicked_coords,Color.LIME_GREEN)
 	#draw_weak_grid_line(MyBoard.last_clicked_coords,Color.LIME_GREEN)
 	#draw_lerp_points_in_plane(Utils.Coordinates.new(),MyBoard.last_clicked_coords,Color.BLACK,20)
+	draw_vertex_in_plane(MyBoard.last_vertex)
 	
 func coords_to_triangle_points(InCoords:Utils.Coordinates, tile_size:float) -> PackedVector2Array:
 	var theta_base = 30
@@ -565,3 +567,10 @@ func draw_lerp_points_in_plane(coord1: Utils.Coordinates, coord2: Utils.Coordina
 	for p in pts:
 		draw_circle(p, radius, color)
 		
+
+func draw_vertex_in_plane(coord: Utils.Coordinates, color: Color = Color.BLACK, radius := 40.0):
+	if !(coord):
+		return
+	var p = coord.ToVector2(MyBoard.TileSize)
+	draw_circle(p, radius, color)
+	
