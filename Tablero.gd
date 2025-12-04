@@ -4,6 +4,8 @@ extends Node2D
 @onready var BoardBGSprite = $BoardDGSprite
 @onready var TBoard: Node2D = $"."
 
+var bIsForEditor = false
+
 enum BoardType {Axial=0, Radial}
 
 class Board:
@@ -437,7 +439,7 @@ func _process(delta: float) -> void:
 	#print("Screen:", get_viewport().get_mouse_position())
 	#print("World:", get_global_mouse_position())
 	pass
-	
+#func _physics_process(delta: float) -> void:
 func _draw():
 	if MyBoard.last_coords == null:
 		return
@@ -445,8 +447,8 @@ func _draw():
 	#draw_triangle_pos(MyBoard.last_coords)
 	#draw_ring_edge_pos(MyBoard.last_coords)
 	#draw_ring_pos(MyBoard.last_coords)
-	draw_weak_ring_pos(MyBoard.last_coords)
-	#draw_triangle_pos_C(MyBoard.last_clicked_coords,Color.LIME_GREEN)
+	#draw_weak_ring_pos(MyBoard.last_coords)
+	draw_triangle_pos_C(MyBoard.last_clicked_coords,Color.LIME_GREEN)
 	#draw_grid_line(MyBoard.last_clicked_coords,Color.LIME_GREEN)
 	#draw_weak_grid_line(MyBoard.last_clicked_coords,Color.LIME_GREEN)
 	#draw_lerp_points_in_plane(Utils.Coordinates.new(),MyBoard.last_clicked_coords,Color.BLACK,20)
