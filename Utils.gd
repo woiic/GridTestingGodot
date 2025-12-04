@@ -51,10 +51,10 @@ class Coordinates:
 		p = -z
 		q = y
 		r = x+y+z
-		if r == -1:
-			p = -p
-			q = -q
-			r = -r
+		#if r == -1:
+			#p = -p
+			#q = -q
+			#r = -r
 		setCubeCFValue()
 		return
 	
@@ -125,7 +125,7 @@ class Coordinates:
 	
 	
 	func ToVector2(sizeLenght):
-		#var center = Vector2(1.0/2.0,sqrt(3)/4) 
+		var center = Vector2(1.0/2.0,sqrt(3)/4) 
 		##var x = - q*(sizeLenght/2)  + r*(sizeLenght/2) 
 		##var x = (sqrt(3)/2*p + sqrt(3)/4 * q) * sizeLenght + r*(sizeLenght/2) 
 		#var x = q*(sizeLenght/2) + p*sizeLenght 
@@ -135,6 +135,7 @@ class Coordinates:
 		##var y = (3.0/4) * p * sizeLenght
 		#var y = -q*sqrt(3)*(sizeLenght/2)
 		#return Vector2(x, y)
+
 		var theta_base = 30
 		var theta = PI * theta_base / 180
 		var p_aux = p
@@ -148,6 +149,8 @@ class Coordinates:
 		# 2) Convertir a pixeles (Y positivo hacia abajo)
 		var cx = x * sizeLenght 
 		var cy = -y * sizeLenght
+		if r == TO.Vertex:
+			return Vector2(cx,cy) - center
 		if r:
 			cx += (sizeLenght/2)
 		return Vector2(cx,cy)
@@ -167,7 +170,7 @@ class Coordinates:
 		var qf = q
 		var sf = -p
 		if r:
-			pf += 1
+			pf += r
 		return Vector3(pf, qf, sf)
 	
 	func getWCubeCoords():
