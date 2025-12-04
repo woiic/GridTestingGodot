@@ -418,7 +418,7 @@ func Vector2ToCoords(vec: Vector2, tile_size: float) -> Utils.Coordinates:
 
 
 func Vector2ToHex(vec: Vector2, tile_size: float) -> Vector3:
-	print("Mouse: ", vec.x, ", ", vec.y)
+	#print("Mouse: ", vec.x, ", ", vec.y)
 	var displacement = Vector2(0, sqrt(3)/ 12)
 	var center = Vector2(1.0/2.0,sqrt(3)/4.0) 
 	#center = Vector2(0,0)
