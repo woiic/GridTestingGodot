@@ -266,8 +266,8 @@ class Coordinates:
 			out.append(v1)
 			return out
 			
-		#v1 += EPSILON3*100
-		#v2 -= EPSILON3*100
+		#v1 += EPSILON3*1000
+		#v2 -= EPSILON3*1000
 		
 		for i in range(N + 1):
 			var t = float(i) / float(N)
