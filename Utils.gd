@@ -43,6 +43,20 @@ class Coordinates:
 		setCubeCFValue()
 		return
 	
+	func getNeighborhood():
+		var c1 = Coordinates.new()
+		var c2 = Coordinates.new()
+		var c3 = Coordinates.new()
+		var c4 = Coordinates.new()
+		var c5 = Coordinates.new()
+		var c6 = Coordinates.new()
+		c1.setByCubeFace(1,0,-1)
+		c2.setByCubeFace(0,1,-1)
+		c3.setByCubeFace(-1,1,0)
+		c4.setByCubeFace(-1,0,1)
+		c5.setByCubeFace(0,-1,1)
+		c6.setByCubeFace(1,-1,0)
+		return [c1,c2,c3,c4,c5,c6]
 	func setCubeCFValue():
 		CubeCF.setValues(int(r) + p - q, q, -p)
 		
