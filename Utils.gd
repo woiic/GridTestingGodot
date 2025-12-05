@@ -315,7 +315,7 @@ class Coordinates:
 				elif abs(check.x - 0.5) < 0.0001 and abs(check.z - 0.5) < 0.0001:
 					point.x += round(check2.x)
 				
-			#print("PointAfter ", i, " : ", point)
+			print("PointAfter ", i, " : ", point)
 			out.append(point)
 
 		return out
@@ -490,11 +490,17 @@ func SubspaceToVector2(vec:Vector2):
 	var y = -t * 1/cos(theta) 
 	return Vector2(x,y)
 
-func rotateWeakCube(vec : Vector3):
-	var x = vec.x
-	var y = vec.y
-	var z = vec.z
-	return Vector3(-y,-z,-x)
+func rotateWeakCube(vec : Vector3, orientation = 1):
+	if orientation ==1:
+		var x = vec.x
+		var y = vec.y
+		var z = vec.z
+		return Vector3(-y,-z,-x)
+	elif orientation == -1:
+		var x = vec.x
+		var y = vec.y
+		var z = vec.z
+		return Vector3(-z,-x,-y)
 
 class CoordinatesCF:
 	var a = 0

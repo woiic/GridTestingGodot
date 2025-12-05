@@ -414,7 +414,8 @@ class Board:
 
 		return out
 	
-	func find_vertex_line(coord1: Utils.Coordinates, coord2: Utils.Coordinates) -> Array:
+	func find_vertex_line(coord1: Utils.Coordinates, coord2: Utils.Coordinates, orientation = 1) -> Array:
+		# 1 for positive orientation -1 for negative
 		var N = coord1.weakDistance(coord2)
 		if N == 0:
 			return [coord1]
@@ -435,7 +436,7 @@ class Board:
 			else:
 				if last_class:
 					var dir1 = e - pts[i-1]
-					var dir2 = Utils.rotateWeakCube(dir1)
+					var dir2 = Utils.rotateWeakCube(dir1, orientation)
 					var c = pts[i-1] + dir2
 					tri.setByWCube(c.x,c.y,c.z)
 					out.append(tri)
@@ -530,7 +531,7 @@ func _draw():
 	#draw_triangle_pos_C(MyBoard.last_clicked_coords,Color.LIME_GREEN)
 	#draw_grid_line(MyBoard.last_clicked_coords,Color.LIME_GREEN)
 	#draw_weak_vertex_grid_line(MyBoard.last_vertex)
-	draw_vertex_grid_line(MyBoard.last_vertex)
+	draw_vertex_grid_line(MyBoard.last_vertex, 1)
 	#draw_weak_grid_line(MyBoard.last_clicked_coords,Color.LIME_GREEN)
 	#draw_weak_grid_line(MyBoard.last_vertex,Color.LIME_GREEN, Utils.Coordinates.new(0,0,-1))
 	#draw_lerp_points_in_plane(Utils.Coordinates.new(),MyBoard.last_clicked_coords,Color.BLACK,20)
@@ -651,11 +652,12 @@ func draw_weak_vertex_grid_line(Coords :Utils.Coordinates, color: Color = Color.
 		var pts = c.ToVector2(MyBoard.TileSize)
 		draw_circle(pts, radius, color)
 
-func draw_vertex_grid_line(Coords :Utils.Coordinates, color: Color = Color.BLACK, radius := 45.0):
+func draw_vertex_grid_line(Coords :Utils.Coordinates, orientation = 1 ,color: Color = Color.BLACK, radius := 45.0):
+	# orientation = 1 for positive -1 for negative
 	if !Coords:
 		return
 	var c0 = Utils.Coordinates.new(0,0,Utils.TO.Vertex)
-	for c in MyBoard.find_vertex_line(c0,Coords):
+	for c in MyBoard.find_vertex_line(c0,Coords, orientation):
 		var pts = c.ToVector2(MyBoard.TileSize)
 		draw_circle(pts, radius, color)
 
