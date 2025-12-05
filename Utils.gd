@@ -274,7 +274,7 @@ class Coordinates:
 	
 	func lerp_plane_weak_points(coord2: Utils.Coordinates) -> Array:
 		var N = self.weakDistance(coord2)
-		print("N : ", N)
+		#print("N : ", N)
 		var v1 = self.getWCubeCoords()
 		var v2 = coord2.getWCubeCoords()
 		var out: Array = []
@@ -293,8 +293,8 @@ class Coordinates:
 			var check = abs(unround - point)
 			var check2 = unround - point
 
-			print("UnroundPoint ", i, " : ", unround)
-			print("Point ", i, " : ", point)
+			#print("UnroundPoint ", i, " : ", unround)
+			#print("Point ", i, " : ", point)
 
 			# --- Apply your correction rule ---
 			# If a pair is exactly 0.5, adjust the rounded point
@@ -312,7 +312,7 @@ class Coordinates:
 			elif abs(check.x - 0.5) < 0.0001 and abs(check.z - 0.5) < 0.0001:
 				point.x += round(check2.x)
 			
-			print("PointAfter ", i, " : ", point)
+			#print("PointAfter ", i, " : ", point)
 			out.append(point)
 
 		return out

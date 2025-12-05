@@ -371,6 +371,41 @@ class Board:
 					tri.setByWCube(g.x,g.y,g.z)
 			out.append(tri)
 			i += 1
+		
+		return out
+	
+	func find_weak_vertex_line(coord1: Utils.Coordinates, coord2: Utils.Coordinates) -> Array:
+		var N = coord1.weakDistance(coord2)
+		if N == 0:
+			return [coord1]
+
+		var out := []
+		var pts = coord1.lerp_plane_weak_points(coord2)
+		var i = 0
+		for e in pts:
+			var tri = Utils.Coordinates.new()
+			var x = e.x
+			var y = e.y
+			var z = e.z
+			if !Utils.classify_hex_coset_direct(x,y,z):
+				tri.setByWCube(e.x,e.y,e.z)
+				out.append(tri)
+			#else:
+				#var dir1 = e - pts[i-1]
+				#var dir2 = pts[i+1] - e
+				#if dir1 != dir2:
+					#var c = pts[i-1] + dir2
+					#tri.setByWCube(c.x,c.y,c.z)
+				#else:
+					#var F = Utils.Coordinates.new()
+					#var dir3 = Utils.rotateWeakCube(dir1)
+					#var f = pts[i-1] + dir3
+					#var g = e + dir3
+					#F.setByWCube(f.x,f.y,f.z)
+					#out.append(F)
+					#tri.setByWCube(g.x,g.y,g.z)
+			
+			i += 1
 
 		return out
 
@@ -448,9 +483,10 @@ func _draw():
 	#draw_ring_edge_pos(MyBoard.last_coords)
 	#draw_ring_pos(MyBoard.last_coords)
 	#draw_weak_ring_pos(MyBoard.last_coords)
-	draw_triangle_pos_C(MyBoard.last_clicked_coords,Color.LIME_GREEN)
+	#draw_triangle_pos_C(MyBoard.last_clicked_coords,Color.LIME_GREEN)
 	#draw_grid_line(MyBoard.last_clicked_coords,Color.LIME_GREEN)
-	#draw_weak_grid_line(MyBoard.last_clicked_coords,Color.LIME_GREEN)
+	draw_weak_vertex_grid_line(MyBoard.last_vertex)
+	draw_weak_grid_line(MyBoard.last_clicked_coords,Color.LIME_GREEN)
 	#draw_lerp_points_in_plane(Utils.Coordinates.new(),MyBoard.last_clicked_coords,Color.BLACK,20)
 	draw_vertex_in_plane(MyBoard.last_vertex)
 	
@@ -560,6 +596,14 @@ func draw_weak_grid_line(Coords :Utils.Coordinates, color):
 	for c in MyBoard.find_weak_line(Utils.Coordinates.new(),Coords):
 		var pts = coords_to_triangle_points(c, MyBoard.TileSize)
 		draw_polygon(pts, [color])
+
+func draw_weak_vertex_grid_line(Coords :Utils.Coordinates, color: Color = Color.BLACK, radius := 45.0):
+	if !Coords:
+		return
+	var c0 = Utils.Coordinates.new(0,0,Utils.TO.Vertex)
+	for c in MyBoard.find_weak_vertex_line(c0,Coords):
+		var pts = c.ToVector2(MyBoard.TileSize)
+		draw_circle(pts, radius, color)
 
 func draw_lerp_points_in_plane(coord1: Utils.Coordinates, coord2: Utils.Coordinates, color: Color, radius := 20.0):
 	if !(coord1 and coord2):
