@@ -277,14 +277,15 @@ class Coordinates:
 		#print("N : ", N)
 		var v1 = self.getWCubeCoords()
 		var v2 = coord2.getWCubeCoords()
+		var dif = v2 - v1
 		var out: Array = []
 
 		if N == 0:
 			out.append(v1)
 			return out
 			
-		#v1 += EPSILON3*1000
-		#v2 -= EPSILON3*1000
+		#v1 += EPSILON3 * 10  # * (1 - 2 * int(dif.x - dif.y > 0 ))
+		#v2 -= EPSILON3 * 1000  # * (1 - 2 * int(dif.y - dif.x > 0 ))
 		
 		for i in range(N + 1):
 			var t = float(i) / float(N)
@@ -295,23 +296,25 @@ class Coordinates:
 
 			#print("UnroundPoint ", i, " : ", unround)
 			#print("Point ", i, " : ", point)
-
-			# --- Apply your correction rule ---
-			# If a pair is exactly 0.5, adjust the rounded point
-			# We check each pair: (x,y), (y,z), (x,z)
-
-			# Pair (x, y)
-			if abs(check.x - 0.5) < 0.0001 and abs(check.y - 0.5) < 0.0001:
-				point.x += round(check2.x)
-
-			# Pair (y, z)
-			elif abs(check.y - 0.5) < 0.0001 and abs(check.z - 0.5) < 0.0001:
-				point.y += round(check2.y)
-
-			# Pair (x, z)
-			elif abs(check.x - 0.5) < 0.0001 and abs(check.z - 0.5) < 0.0001:
-				point.x += round(check2.x)
 			
+			if point.x + point.y + point.z !=0:
+					
+				# --- Apply your correction rule ---
+				# If a pair is exactly 0.5, adjust the rounded point
+				# We check each pair: (x,y), (y,z), (x,z)
+
+				# Pair (x, y)
+				if abs(check.x - 0.5) < 0.0001 and abs(check.y - 0.5) < 0.0001:
+					point.x += round(check2.x)
+
+				# Pair (y, z)
+				elif abs(check.y - 0.5) < 0.0001 and abs(check.z - 0.5) < 0.0001:
+					point.y += round(check2.y)
+
+				# Pair (x, z)
+				elif abs(check.x - 0.5) < 0.0001 and abs(check.z - 0.5) < 0.0001:
+					point.x += round(check2.x)
+				
 			#print("PointAfter ", i, " : ", point)
 			out.append(point)
 
