@@ -487,7 +487,7 @@ func Vector2ToWHex(vec: Vector2, tile_size: float) -> Vector3:
 	#var r = -p0 + q0
 
 	# debug: see values while testing
-	print("Offset : col : ", p0 , " row : ", -q0)
+	#print("Offset : col : ", p0 , " row : ", -q0)
 	#var parity = posmod(q0, 2)
 	#print("Cube : p : ", p0 - (q0 + parity)/2 , " q : ", -q0, " r : ", q0 - (p0 - (q0 + parity)/2 ))
 	#print("Cube2 : p : ", p0 - (q0 + parity)/2 + q0, " q : ", -q0, " r : ", - (p0 - (q0 + parity)/2 ))
@@ -510,11 +510,11 @@ func Vector2ToWHexCoord(vec: Vector2, tile_size: float) -> Utils.Coordinates:
 	var Hex = Vector2ToWHex(vec, tile_size)
 	var Coord = Utils.Coordinates.new()
 	Coord.setByWCube(Hex.x,Hex.y, Hex.z)
-	var Wvec = Coord.getWCubeCoords()
-	var classes = classify_hex_coset_direct(Hex.x,Hex.y, Hex.z)
-	print("Coord : ", Coord)
-	print("WCoord : ", Wvec)
-	print("Class : ", classes)
+	#var Wvec = Coord.getWCubeCoords()
+	#var classes = classify_hex_coset_direct(Hex.x,Hex.y, Hex.z)
+	#print("Coord : ", Coord)
+	#print("WCoord : ", Wvec)
+	#print("Class : ", classes)
 	return Coord
 
 

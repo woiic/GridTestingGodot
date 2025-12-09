@@ -539,6 +539,8 @@ func _draw():
 	#draw_lerp_points_in_plane(Utils.Coordinates.new(),MyBoard.last_clicked_coords,Color.BLACK,20)
 	#draw_vertex_in_plane(MyBoard.last_vertex)
 	draw_coord_in_plane(MyBoard.last_Wcoord)
+	#draw_weak_vertex_in_plane(MyBoard.last_Wcoord)
+	#draw_weak_triangle_in_plane(MyBoard.last_Wcoord)
 	
 func coords_to_triangle_points(InCoords:Utils.Coordinates, tile_size:float) -> PackedVector2Array:
 	var theta_base = 30
@@ -687,4 +689,21 @@ func draw_coord_in_plane(coord: Utils.Coordinates, radius := 40.0):
 	if !classes:
 		draw_vertex_in_plane(coord)
 	else:
+		draw_triangle_pos(coord)
+
+
+func draw_weak_vertex_in_plane(coord: Utils.Coordinates, radius := 40.0):
+	if !(coord):
+		return
+	var vec = coord.getWCubeCoords()
+	var classes = Utils.classify_hex_coset_direct(vec.x,vec.y,vec.z)
+	if !classes:
+		draw_vertex_in_plane(coord)
+
+func draw_weak_triangle_in_plane(coord: Utils.Coordinates, radius := 40.0):
+	if !(coord):
+		return
+	var vec = coord.getWCubeCoords()
+	var classes = Utils.classify_hex_coset_direct(vec.x,vec.y,vec.z)
+	if classes:
 		draw_triangle_pos(coord)
