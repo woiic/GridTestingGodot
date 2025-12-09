@@ -17,6 +17,7 @@ class Board:
 	var last_hex = null
 	var last_vertex = null
 	var last_clicked_coords = null
+	var last_Wcoord = null
 	const EPSILON := Vector3(1e-6, 2e-6, -3e-6)
 	
 	var tablero = {}
@@ -506,6 +507,7 @@ func _process(delta: float) -> void:
 	MyBoard.last_coords = Utils.Vector2ToCoords(mouse, MyBoard.TileSize)
 	MyBoard.last_hex = Utils.Vector2ToHex(mouse, MyBoard.TileSize)
 	MyBoard.last_vertex = Utils.Vector2ToHexCoord(mouse, MyBoard.TileSize)
+	MyBoard.last_Wcoord = Utils.Vector2ToWHexCoord(mouse, MyBoard.TileSize)
 	if Input.is_action_just_pressed("left_click"):
 		MyBoard.last_clicked_coords = MyBoard.last_coords
 		#print("Mouse: ", mouse.x, ", ", mouse.y)
@@ -531,11 +533,12 @@ func _draw():
 	#draw_triangle_pos_C(MyBoard.last_clicked_coords,Color.LIME_GREEN)
 	#draw_grid_line(MyBoard.last_clicked_coords,Color.LIME_GREEN)
 	#draw_weak_vertex_grid_line(MyBoard.last_vertex)
-	draw_vertex_grid_line(MyBoard.last_vertex, 1)
+	#draw_vertex_grid_line(MyBoard.last_vertex, 1)
 	#draw_weak_grid_line(MyBoard.last_clicked_coords,Color.LIME_GREEN)
 	#draw_weak_grid_line(MyBoard.last_vertex,Color.LIME_GREEN, Utils.Coordinates.new(0,0,-1))
 	#draw_lerp_points_in_plane(Utils.Coordinates.new(),MyBoard.last_clicked_coords,Color.BLACK,20)
 	#draw_vertex_in_plane(MyBoard.last_vertex)
+	draw_coord_in_plane(MyBoard.last_Wcoord)
 	
 func coords_to_triangle_points(InCoords:Utils.Coordinates, tile_size:float) -> PackedVector2Array:
 	var theta_base = 30
@@ -675,4 +678,13 @@ func draw_vertex_in_plane(coord: Utils.Coordinates, color: Color = Color.BLACK, 
 		return
 	var p = coord.ToVector2(MyBoard.TileSize)
 	draw_circle(p, radius, color)
-	
+
+func draw_coord_in_plane(coord: Utils.Coordinates, radius := 40.0):
+	if !(coord):
+		return
+	var vec = coord.getWCubeCoords()
+	var classes = Utils.classify_hex_coset_direct(vec.x,vec.y,vec.z)
+	if !classes:
+		draw_vertex_in_plane(coord)
+	else:
+		draw_triangle_pos(coord)

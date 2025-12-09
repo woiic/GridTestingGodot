@@ -315,7 +315,7 @@ class Coordinates:
 				elif abs(check.x - 0.5) < 0.0001 and abs(check.z - 0.5) < 0.0001:
 					point.x += round(check2.x)
 				
-			print("PointAfter ", i, " : ", point)
+			#print("PointAfter ", i, " : ", point)
 			out.append(point)
 
 		return out
@@ -454,6 +454,51 @@ func Vector2ToHex(vec: Vector2, tile_size: float) -> Vector3:
 	#return Vector3(p0 - (q0 + parity)/2 , -q0, - (p0 - (q0 + parity)/2 ) + q0)
 	return Vector3(p0 - q0, q0, -p0)
 
+func Vector2ToWHex(vec: Vector2, tile_size: float) -> Vector3:
+	#print("Mouse: ", vec.x, ", ", vec.y)
+	var displacement = Vector2(0, sqrt(3)/ 12)
+	var center = Vector2(1.0/2.0 - 4/9.0  ,sqrt(3)/4.0 - 1/9.0) 
+	var base_theta = 90
+	var theta = base_theta * PI / 180
+	var size = tile_size /sqrt(3) 
+	#center = Vector2(0,0)
+	# convert to tile units; flip Y if needed because screen Y goes down
+	#var size = tile_size/ sqrt(3)
+	#var l = vec.x / size  + center.x
+	#var t = -vec.y / size  - center.y 
+	#print("l : ", l, " t : ", t)
+	# skewed / rhombus coordinates (same transform you used)
+	#var x = sqrt(3)/3.0 * l - 1.0/3.0 * t 
+	#var y = -t * 2/3.0 
+	#print("x : ", x, "y : ", y)
+	#var p0 : int = ceil(x)
+	#var q0 : int = ceil(y)
+	var x_pre = vec.x / (size) + center.x 
+	var y_pre = -vec.y / (size) - center.y 
+	
+	var x = x_pre * cos(theta) -  y_pre * sin(theta) 
+	var y = x_pre * sin(theta) +  y_pre * cos(theta) 
+	
+	var temp = floor(x + sqrt(3) * y + 1)
+	var p0 = floor((floor(2*x+1) + temp) / 3.0 );
+	var q0 = floor((temp + floor(-x + sqrt(3) * y + 1))/3.0);
+
+	# triangle half: lower if u+v < 1, upper if >= 1
+	#var r = -p0 + q0
+
+	# debug: see values while testing
+	print("Offset : col : ", p0 , " row : ", -q0)
+	#var parity = posmod(q0, 2)
+	#print("Cube : p : ", p0 - (q0 + parity)/2 , " q : ", -q0, " r : ", q0 - (p0 - (q0 + parity)/2 ))
+	#print("Cube2 : p : ", p0 - (q0 + parity)/2 + q0, " q : ", -q0, " r : ", - (p0 - (q0 + parity)/2 ))
+	#return Vector3(p0 - (q0 + parity)/2 + q0, -q0, - (p0 - (q0 + parity)/2 ))
+	#return Vector3(p0 - (q0 + parity)/2 , -q0, - (p0 - (q0 + parity)/2 ) + q0)
+	return Vector3(-p0, q0, p0 - q0)
+
+
+
+
+
 
 func Vector2ToHexCoord(vec: Vector2, tile_size: float) -> Utils.Coordinates:
 	var Hex = Vector2ToHex(vec, tile_size)
@@ -461,7 +506,16 @@ func Vector2ToHexCoord(vec: Vector2, tile_size: float) -> Utils.Coordinates:
 	Coord.setByCube(Hex.x,Hex.y, TO.Vertex)
 	return Coord
 
-
+func Vector2ToWHexCoord(vec: Vector2, tile_size: float) -> Utils.Coordinates:
+	var Hex = Vector2ToWHex(vec, tile_size)
+	var Coord = Utils.Coordinates.new()
+	Coord.setByWCube(Hex.x,Hex.y, Hex.z)
+	var Wvec = Coord.getWCubeCoords()
+	var classes = classify_hex_coset_direct(Hex.x,Hex.y, Hex.z)
+	print("Coord : ", Coord)
+	print("WCoord : ", Wvec)
+	print("Class : ", classes)
+	return Coord
 
 
 

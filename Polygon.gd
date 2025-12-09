@@ -9,8 +9,8 @@ func _init(CoordsArr:Array[Utils.Coordinates]=[]) -> void:
 		var c1 = Utils.Coordinates.new()
 		var c2 = Utils.Coordinates.new()
 		c0.setByCube(0,0,Utils.TO.Vertex)
-		c1.setByCube(1,0,Utils.TO.Vertex)
-		c2.setByCube(0,1,Utils.TO.Vertex)
+		c1.setByCube(1,-1,Utils.TO.Vertex)
+		c2.setByCube(1,0,Utils.TO.Vertex)
 		CoordsArr = [
 			c0,c1,c2
 		]
