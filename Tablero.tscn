@@ -1,8 +1,13 @@
-[gd_scene load_steps=2 format=3 uid="uid://byy2dwu4ecbjk"]
+[gd_scene load_steps=3 format=3 uid="uid://byy2dwu4ecbjk"]
 
 [ext_resource type="Script" uid="uid://1m13mxhnj7wr" path="res://Tablero.gd" id="1_ot4jy"]
+[ext_resource type="Script" uid="uid://c3cxclyr0olxf" path="res://Polygon.gd" id="2_gg416"]
 
 [node name="TBoard" type="Node2D"]
 script = ExtResource("1_ot4jy")
 
 [node name="BoardDGSprite" type="Sprite2D" parent="."]
+
+[node name="Polygon" type="Node2D" parent="."]
+script = ExtResource("2_gg416")
+metadata/_custom_type_script = "uid://c3cxclyr0olxf"

@@ -3,6 +3,7 @@ extends Node2D
 
 @onready var BoardBGSprite = $BoardDGSprite
 @onready var TBoard: Node2D = $"."
+@onready var polygon: Polygon = $Polygon
 
 var bIsForEditor = false
 
@@ -11,7 +12,7 @@ enum BoardType {Axial=0, Radial}
 class Board:
 	var Size=[0,0]
 	var BasicTile = preload("res://Tile.tscn")
-	#var BasicPolygon =preload("res://Polygon.tscn")
+	#var BasicPolygon = preload("res://Polygon.tscn")
 	var BoardRef
 	var TileSize = 1
 	var last_coords = null
@@ -20,7 +21,7 @@ class Board:
 	var last_clicked_coords = null
 	var last_Wcoord = null
 	var selected_vertices = []
-	var polygon : Polygon
+	#var polygon : Polygon = BasicPolygon.instatiate()
 	const EPSILON := Vector3(1e-6, 2e-6, -3e-6)
 	
 	var tablero = {}
@@ -418,45 +419,45 @@ class Board:
 
 		return out
 	
-	func find_vertex_line(coord1: Utils.Coordinates, coord2: Utils.Coordinates, orientation = 1) -> Array:
-		# 1 for positive orientation -1 for negative
-		var N = coord1.weakDistance(coord2)
-		if N == 0:
-			return [coord1]
-
-		var out := []
-		var pts = coord1.lerp_plane_weak_points(coord2)
-		var i = 0
-		var last_class = null
-		for e in pts:
-			var tri = Utils.Coordinates.new()
-			var x = e.x
-			var y = e.y
-			var z = e.z
-			var classes = Utils.classify_hex_coset_direct(x,y,z)
-			if !classes:
-				tri.setByWCube(e.x,e.y,e.z)
-				out.append(tri)
-			else:
-				if last_class:
-					var dir1 = e - pts[i-1]
-					var dir2 = Utils.rotateWeakCube(dir1, orientation)
-					var c = pts[i-1] + dir2
-					tri.setByWCube(c.x,c.y,c.z)
-					out.append(tri)
-				#else:
-					#var F = Utils.Coordinates.new()
-					
-					#var f = pts[i-1] + dir3
-					#var g = e + dir3
-					#F.setByWCube(f.x,f.y,f.z)
-					#out.append(F)
-					#tri.setByWCube(g.x,g.y,g.z)
-			
-			i += 1
-			last_class = classes
-
-		return out
+	#func find_vertex_line(coord1: Utils.Coordinates, coord2: Utils.Coordinates, orientation = 1) -> Array:
+		## 1 for positive orientation -1 for negative
+		#var N = coord1.weakDistance(coord2)
+		#if N == 0:
+			#return [coord1]
+#
+		#var out := []
+		#var pts = coord1.lerp_plane_weak_points(coord2)
+		#var i = 0
+		#var last_class = null
+		#for e in pts:
+			#var tri = Utils.Coordinates.new()
+			#var x = e.x
+			#var y = e.y
+			#var z = e.z
+			#var classes = Utils.classify_hex_coset_direct(x,y,z)
+			#if !classes:
+				#tri.setByWCube(e.x,e.y,e.z)
+				#out.append(tri)
+			#else:
+				#if last_class:
+					#var dir1 = e - pts[i-1]
+					#var dir2 = Utils.rotateWeakCube(dir1, orientation)
+					#var c = pts[i-1] + dir2
+					#tri.setByWCube(c.x,c.y,c.z)
+					#out.append(tri)
+				##else:
+					##var F = Utils.Coordinates.new()
+					#
+					##var f = pts[i-1] + dir3
+					##var g = e + dir3
+					##F.setByWCube(f.x,f.y,f.z)
+					##out.append(F)
+					##tri.setByWCube(g.x,g.y,g.z)
+			#
+			#i += 1
+			#last_class = classes
+#
+		#return out
 
 
 	func _cube_lerp(a: Vector3, b: Vector3, t: float) -> Vector3:
@@ -498,7 +499,8 @@ func _ready() -> void:
 	#MyBoard.DisplayRingBoard()
 	#MyBoard.DisplayRadialBoard()
 	if bIsForEditor:
-		MyBoard.polygon = Polygon.new()
+		pass
+		#MyBoard.polygon = Polygon.new()
 		#MyBoard.selected_vertices.append(Utils.Coordinates.new(0,0,-1))
 	return
 
@@ -526,14 +528,17 @@ func _process(delta: float) -> void:
 			
 			if !(MyBoard.last_vertex.is_in_array(MyBoard.selected_vertices)) :
 				MyBoard.selected_vertices.append(MyBoard.last_vertex)
-				MyBoard.polygon.append(MyBoard.last_vertex)
+				#MyBoard.polygon.append(MyBoard.last_vertex)
+				polygon.append(MyBoard.last_vertex)
 				
 			else:
 				MyBoard.selected_vertices = []
 				var empty_array :Array[Utils.Coordinates] = []
-				MyBoard.polygon.setVertices(empty_array)
+				#MyBoard.polygon.setVertices(empty_array)
+				polygon.setVertices(empty_array)
 			print("Selected vertices : ", MyBoard.selected_vertices)
-			print("Polygon : ", MyBoard.polygon)
+			#print("Polygon : ", MyBoard.polygon)
+			print("Polygon : ", polygon)
 	queue_redraw() # redraw
 	
 	#print("Screen:", get_viewport().get_mouse_position())
@@ -562,9 +567,9 @@ func _draw():
 	if bIsForEditor:
 		#draw_weak_grid_line(MyBoard.last_vertex,Color.LIME_GREEN, Utils.Coordinates.new(0,0,-1))
 		draw_vertex_in_plane(MyBoard.last_vertex)
-		draw_selected_vertices_edges()
-		draw_selected_vertices()
-		#MyBoard.polygon.draw_vertices(MyBoard.TileSize) ????!
+		#draw_selected_vertices_edges()
+		#draw_selected_vertices()
+		_on_polygon_draw(MyBoard.TileSize)
 	else:
 		draw_coord_in_plane(MyBoard.last_Wcoord)
 	
@@ -683,14 +688,14 @@ func draw_weak_vertex_grid_line(Coords :Utils.Coordinates, color: Color = Color.
 		var pts = c.ToVector2(MyBoard.TileSize)
 		draw_circle(pts, radius, color)
 
-func draw_vertex_grid_line(C1 :Utils.Coordinates, c0 = Utils.Coordinates.new(0,0,Utils.TO.Vertex), orientation = 1 ,color: Color = Color.BLACK, radius := 45.0):
-	# orientation = 1 for positive -1 for negative
-	if !C1:
-		return
-	#var c0 = Utils.Coordinates.new(0,0,Utils.TO.Vertex)
-	for c in MyBoard.find_vertex_line(c0,C1, orientation):
-		var pts = c.ToVector2(MyBoard.TileSize)
-		draw_circle(pts, radius, color)
+#func draw_vertex_grid_line(C1 :Utils.Coordinates, c0 = Utils.Coordinates.new(0,0,Utils.TO.Vertex), orientation = 1 ,color: Color = Color.BLACK, radius := 45.0):
+	## orientation = 1 for positive -1 for negative
+	#if !C1:
+		#return
+	##var c0 = Utils.Coordinates.new(0,0,Utils.TO.Vertex)
+	#for c in MyBoard.find_vertex_line(c0,C1, orientation):
+		#var pts = c.ToVector2(MyBoard.TileSize)
+		#draw_circle(pts, radius, color)
 
 func draw_lerp_points_in_plane(coord1: Utils.Coordinates, coord2: Utils.Coordinates, color: Color, radius := 20.0):
 	if !(coord1 and coord2):
@@ -739,25 +744,21 @@ func draw_selected_vertices(color = Color.BLACK, radius = 45.0):
 		var pos = c.ToVector2(MyBoard.TileSize)
 		draw_circle(pos,radius, color)
 
-func draw_edge_grid_line(C1 :Utils.Coordinates, c0 = Utils.Coordinates.new(0,0,Utils.TO.Vertex), orientation = 1 ,color: Color = Color.GREEN, width := 30.0):
-	# orientation = 1 for positive -1 for negative
-	if !C1:
-		return
-	if C1.is_equal_to(c0):
-		return
-	#var c0 = Utils.Coordinates.new(0,0,Utils.TO.Vertex)
-	var pairs = MyBoard.find_vertex_line(c0,C1, orientation).duplicate()
+
+
+#func draw_selected_vertices_edges(color = Color.DIM_GRAY,orientation = 1, radius = 45.0):
+	#if !MyBoard.selected_vertices:
+		#return
+	#var pairs= MyBoard.selected_vertices.duplicate()
 	#pairs.append(pairs[0])
-	for i in len(pairs)-1:
-		draw_line(pairs[i+1].ToVector2(MyBoard.TileSize), pairs[i].ToVector2(MyBoard.TileSize), color, width)
+	#for i in len(MyBoard.selected_vertices):
+		#draw_edge_grid_line(pairs[i+1], pairs[i])
+		##draw_line(pairs[i+1].ToVector2(MyBoard.TileSize), pairs[i].ToVector2(MyBoard.TileSize), Color.GREEN, 30.0)
+		#draw_vertex_grid_line(pairs[i+1], pairs[i],orientation,color,radius)
 
 
-func draw_selected_vertices_edges(color = Color.DIM_GRAY,orientation = 1, radius = 45.0):
-	if !MyBoard.selected_vertices:
-		return
-	var pairs= MyBoard.selected_vertices.duplicate()
-	pairs.append(pairs[0])
-	for i in len(MyBoard.selected_vertices):
-		draw_edge_grid_line(pairs[i+1], pairs[i])
-		#draw_line(pairs[i+1].ToVector2(MyBoard.TileSize), pairs[i].ToVector2(MyBoard.TileSize), Color.GREEN, 30.0)
-		draw_vertex_grid_line(pairs[i+1], pairs[i],orientation,color,radius)
+
+
+func _on_polygon_draw(extra_arg_0: int) -> void:
+	polygon.TileSize = extra_arg_0
+	pass # Replace with function body.
