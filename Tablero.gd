@@ -18,6 +18,7 @@ class Board:
 	var last_vertex = null
 	var last_clicked_coords = null
 	var last_Wcoord = null
+	var selected_vertices = []
 	const EPSILON := Vector3(1e-6, 2e-6, -3e-6)
 	
 	var tablero = {}
@@ -494,6 +495,8 @@ func _ready() -> void:
 	MyBoard.DisplayWeakRadialBoard()
 	#MyBoard.DisplayRingBoard()
 	#MyBoard.DisplayRadialBoard()
+	if bIsForEditor:
+		MyBoard.selected_vertices.append(Utils.Coordinates.new(0,0,-1))
 	return
 
 
@@ -511,11 +514,17 @@ func _process(delta: float) -> void:
 	if Input.is_action_just_pressed("left_click"):
 		MyBoard.last_clicked_coords = MyBoard.last_coords
 		#print("Mouse: ", mouse.x, ", ", mouse.y)
-		print("Last Hex: ", MyBoard.last_hex)
-		print("Last Vertex: ", MyBoard.last_vertex)
+		#print("Last Hex: ", MyBoard.last_hex)
+		#print("Last Vertex: ", MyBoard.last_vertex)
 		#print("Coord : ", MyBoard.last_clicked_coords)
 		#print("Coord_CF : ", MyBoard.last_clicked_coords.getCubeFaceCoords())
 		#print("Coord_WC : ", MyBoard.last_clicked_coords.getWCubeCoords())
+		if bIsForEditor:
+			if !(MyBoard.last_vertex.is_in_array(MyBoard.selected_vertices)) :
+				MyBoard.selected_vertices.append(MyBoard.last_vertex)
+			else:
+				MyBoard.selected_vertices = []
+			print("Selected vertices : ", MyBoard.selected_vertices)
 	queue_redraw() # redraw
 	
 	#print("Screen:", get_viewport().get_mouse_position())
@@ -538,9 +547,15 @@ func _draw():
 	#draw_weak_grid_line(MyBoard.last_vertex,Color.LIME_GREEN, Utils.Coordinates.new(0,0,-1))
 	#draw_lerp_points_in_plane(Utils.Coordinates.new(),MyBoard.last_clicked_coords,Color.BLACK,20)
 	#draw_vertex_in_plane(MyBoard.last_vertex)
-	draw_coord_in_plane(MyBoard.last_Wcoord)
+	#draw_coord_in_plane(MyBoard.last_Wcoord)
 	#draw_weak_vertex_in_plane(MyBoard.last_Wcoord)
 	#draw_weak_triangle_in_plane(MyBoard.last_Wcoord)
+	if bIsForEditor:
+		draw_vertex_in_plane(MyBoard.last_vertex)
+		draw_selected_vertices_edges()
+		draw_selected_vertices()
+	else:
+		draw_coord_in_plane(MyBoard.last_Wcoord)
 	
 func coords_to_triangle_points(InCoords:Utils.Coordinates, tile_size:float) -> PackedVector2Array:
 	var theta_base = 30
@@ -657,12 +672,12 @@ func draw_weak_vertex_grid_line(Coords :Utils.Coordinates, color: Color = Color.
 		var pts = c.ToVector2(MyBoard.TileSize)
 		draw_circle(pts, radius, color)
 
-func draw_vertex_grid_line(Coords :Utils.Coordinates, orientation = 1 ,color: Color = Color.BLACK, radius := 45.0):
+func draw_vertex_grid_line(C1 :Utils.Coordinates, c0 = Utils.Coordinates.new(0,0,Utils.TO.Vertex), orientation = 1 ,color: Color = Color.BLACK, radius := 45.0):
 	# orientation = 1 for positive -1 for negative
-	if !Coords:
+	if !C1:
 		return
-	var c0 = Utils.Coordinates.new(0,0,Utils.TO.Vertex)
-	for c in MyBoard.find_vertex_line(c0,Coords, orientation):
+	#var c0 = Utils.Coordinates.new(0,0,Utils.TO.Vertex)
+	for c in MyBoard.find_vertex_line(c0,C1, orientation):
 		var pts = c.ToVector2(MyBoard.TileSize)
 		draw_circle(pts, radius, color)
 
@@ -707,3 +722,31 @@ func draw_weak_triangle_in_plane(coord: Utils.Coordinates, radius := 40.0):
 	var classes = Utils.classify_hex_coset_direct(vec.x,vec.y,vec.z)
 	if classes:
 		draw_triangle_pos(coord)
+
+func draw_selected_vertices(color = Color.BLACK, radius = 45.0):
+	for c in MyBoard.selected_vertices:
+		var pos = c.ToVector2(MyBoard.TileSize)
+		draw_circle(pos,radius, color)
+
+func draw_edge_grid_line(C1 :Utils.Coordinates, c0 = Utils.Coordinates.new(0,0,Utils.TO.Vertex), orientation = 1 ,color: Color = Color.GREEN, width := 30.0):
+	# orientation = 1 for positive -1 for negative
+	if !C1:
+		return
+	if C1.is_equal_to(c0):
+		return
+	#var c0 = Utils.Coordinates.new(0,0,Utils.TO.Vertex)
+	var pairs = MyBoard.find_vertex_line(c0,C1, orientation).duplicate()
+	#pairs.append(pairs[0])
+	for i in len(pairs)-1:
+		draw_line(pairs[i+1].ToVector2(MyBoard.TileSize), pairs[i].ToVector2(MyBoard.TileSize), color, width)
+
+
+func draw_selected_vertices_edges(color = Color.DIM_GRAY,orientation = 1, radius = 45.0):
+	if !MyBoard.selected_vertices:
+		return
+	var pairs= MyBoard.selected_vertices.duplicate()
+	pairs.append(pairs[0])
+	for i in len(MyBoard.selected_vertices):
+		draw_edge_grid_line(pairs[i+1], pairs[i])
+		#draw_line(pairs[i+1].ToVector2(MyBoard.TileSize), pairs[i].ToVector2(MyBoard.TileSize), Color.GREEN, 30.0)
+		draw_vertex_grid_line(pairs[i+1], pairs[i],orientation,color,radius)

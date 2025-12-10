@@ -43,6 +43,15 @@ class Coordinates:
 		setCubeCFValue()
 		return
 	
+	func is_equal_to(C1 : Utils.Coordinates):
+		return (C1.p == p) and (C1.q == q) and (C1.r == r) 
+	
+	func is_in_array(array):
+		for C1 in array:
+			if is_equal_to(C1):
+				return true
+		return false
+	
 	func getNeighborhood():
 		var c1 = Coordinates.new()
 		var c2 = Coordinates.new()
