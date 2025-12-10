@@ -52,7 +52,7 @@ class Coordinates:
 				return true
 		return false
 	
-	func getNeighborhood():
+	func getNeighborhood(c0 = Utils.Coordinates.new()):
 		var c1 = Coordinates.new()
 		var c2 = Coordinates.new()
 		var c3 = Coordinates.new()
@@ -65,7 +65,34 @@ class Coordinates:
 		c4.setByCubeFace(-1,0,1)
 		c5.setByCubeFace(0,-1,1)
 		c6.setByCubeFace(1,-1,0)
-		return [c1,c2,c3,c4,c5,c6]
+		return [c0.add(c1),
+				c0.add(c2),
+				c0.add(c3),
+				c0.add(c4),
+				c0.add(c5),
+				c0.add(c6)
+				]
+		
+	func getWNeighborhood(c0 = Utils.Coordinates.new()):
+		var c1 = Coordinates.new()
+		var c2 = Coordinates.new()
+		var c3 = Coordinates.new()
+		var c4 = Coordinates.new()
+		var c5 = Coordinates.new()
+		var c6 = Coordinates.new()
+		c1.setByWCube(1,0,-1)
+		c2.setByWCube(0,1,-1)
+		c3.setByWCube(-1,1,0)
+		c4.setByWCube(-1,0,1)
+		c5.setByWCube(0,-1,1)
+		c6.setByWCube(1,-1,0)
+		return [c0.add(c1),
+				c0.add(c2),
+				c0.add(c3),
+				c0.add(c4),
+				c0.add(c5),
+				c0.add(c6)
+				]
 	func setCubeCFValue():
 		CubeCF.setValues(int(r) + p - q, q, -p)
 		
@@ -245,6 +272,14 @@ class Coordinates:
 		var vec1 = self.getCubeFaceCoords()
 		var vec2 = Coord.getCubeFaceCoords()
 		var dif = vec1 - vec2
+		var new_Coord = Utils.Coordinates.new()
+		new_Coord.setByCubeFace(dif.x,dif.y,dif.z)
+		return new_Coord
+	
+	func add(Coord: Utils.Coordinates) -> Utils.Coordinates:
+		var vec1 = self.getCubeFaceCoords()
+		var vec2 = Coord.getCubeFaceCoords()
+		var dif = vec1 + vec2
 		var new_Coord = Utils.Coordinates.new()
 		new_Coord.setByCubeFace(dif.x,dif.y,dif.z)
 		return new_Coord
@@ -565,6 +600,48 @@ func rotateWeakCube(vec : Vector3, orientation = 1):
 		var z = vec.z
 		return Vector3(-z,-x,-y)
 
+
+func find_vertex_line(coord1: Utils.Coordinates, coord2: Utils.Coordinates, orientation = 1) -> Array:
+	# 1 for positive orientation -1 for negative
+	var N = coord1.weakDistance(coord2)
+	if N == 0:
+		return [coord1]
+
+	var out := []
+	var pts = coord1.lerp_plane_weak_points(coord2)
+	var i = 0
+	var last_class = null
+	for e in pts:
+		var tri = Utils.Coordinates.new()
+		var x = e.x
+		var y = e.y
+		var z = e.z
+		var classes = Utils.classify_hex_coset_direct(x,y,z)
+		if !classes:
+			tri.setByWCube(e.x,e.y,e.z)
+			out.append(tri)
+		else:
+			if last_class:
+				var dir1 = e - pts[i-1]
+				var dir2 = Utils.rotateWeakCube(dir1, orientation)
+				var c = pts[i-1] + dir2
+				tri.setByWCube(c.x,c.y,c.z)
+				out.append(tri)
+			#else:
+				#var F = Utils.Coordinates.new()
+				
+				#var f = pts[i-1] + dir3
+				#var g = e + dir3
+				#F.setByWCube(f.x,f.y,f.z)
+				#out.append(F)
+				#tri.setByWCube(g.x,g.y,g.z)
+		
+		i += 1
+		last_class = classes
+
+	return out
+
+
 class CoordinatesCF:
 	var a = 0
 	
@@ -616,6 +693,5 @@ class TableroFlexible:
 		
 		
 		pass
-	
 	
 	

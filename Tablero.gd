@@ -11,6 +11,7 @@ enum BoardType {Axial=0, Radial}
 class Board:
 	var Size=[0,0]
 	var BasicTile = preload("res://Tile.tscn")
+	#var BasicPolygon =preload("res://Polygon.tscn")
 	var BoardRef
 	var TileSize = 1
 	var last_coords = null
@@ -19,6 +20,7 @@ class Board:
 	var last_clicked_coords = null
 	var last_Wcoord = null
 	var selected_vertices = []
+	var polygon : Polygon
 	const EPSILON := Vector3(1e-6, 2e-6, -3e-6)
 	
 	var tablero = {}
@@ -496,7 +498,8 @@ func _ready() -> void:
 	#MyBoard.DisplayRingBoard()
 	#MyBoard.DisplayRadialBoard()
 	if bIsForEditor:
-		MyBoard.selected_vertices.append(Utils.Coordinates.new(0,0,-1))
+		MyBoard.polygon = Polygon.new()
+		#MyBoard.selected_vertices.append(Utils.Coordinates.new(0,0,-1))
 	return
 
 
@@ -520,11 +523,17 @@ func _process(delta: float) -> void:
 		#print("Coord_CF : ", MyBoard.last_clicked_coords.getCubeFaceCoords())
 		#print("Coord_WC : ", MyBoard.last_clicked_coords.getWCubeCoords())
 		if bIsForEditor:
+			
 			if !(MyBoard.last_vertex.is_in_array(MyBoard.selected_vertices)) :
 				MyBoard.selected_vertices.append(MyBoard.last_vertex)
+				MyBoard.polygon.append(MyBoard.last_vertex)
+				
 			else:
 				MyBoard.selected_vertices = []
+				var empty_array :Array[Utils.Coordinates] = []
+				MyBoard.polygon.setVertices(empty_array)
 			print("Selected vertices : ", MyBoard.selected_vertices)
+			print("Polygon : ", MyBoard.polygon)
 	queue_redraw() # redraw
 	
 	#print("Screen:", get_viewport().get_mouse_position())
@@ -551,9 +560,11 @@ func _draw():
 	#draw_weak_vertex_in_plane(MyBoard.last_Wcoord)
 	#draw_weak_triangle_in_plane(MyBoard.last_Wcoord)
 	if bIsForEditor:
+		#draw_weak_grid_line(MyBoard.last_vertex,Color.LIME_GREEN, Utils.Coordinates.new(0,0,-1))
 		draw_vertex_in_plane(MyBoard.last_vertex)
 		draw_selected_vertices_edges()
 		draw_selected_vertices()
+		#MyBoard.polygon.draw_vertices(MyBoard.TileSize) ????!
 	else:
 		draw_coord_in_plane(MyBoard.last_Wcoord)
 	
